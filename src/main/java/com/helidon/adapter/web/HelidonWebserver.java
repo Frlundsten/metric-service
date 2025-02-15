@@ -1,9 +1,9 @@
 package com.helidon.adapter.web;
 
-import com.helidon.adapter.application.in.GetHandler;
-import com.helidon.adapter.application.in.PostHandler;
-import com.helidon.adapter.application.domain.service.GetService;
-import com.helidon.adapter.application.domain.service.PostService;
+import com.helidon.adapter.application.k6.in.GetHandler;
+import com.helidon.adapter.application.k6.in.PostHandler;
+import com.helidon.adapter.application.k6.domain.service.GetService;
+import com.helidon.adapter.application.k6.domain.service.PostService;
 import com.helidon.web.Webserver;
 import io.helidon.config.Config;
 import io.helidon.webserver.WebServer;

@@ -1,6 +1,6 @@
-package com.helidon.adapter.application.in;
+package com.helidon.adapter.application.k6.in;
 
-import com.helidon.adapter.application.domain.service.GetService;
+import com.helidon.adapter.application.k6.domain.service.GetService;
 import com.helidon.application.port.in.Handler;
 import io.helidon.webserver.http.ServerRequest;
 import io.helidon.webserver.http.ServerResponse;
