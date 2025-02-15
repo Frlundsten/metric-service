@@ -1,7 +1,7 @@
 package com.helidon.application.domain.model;
 
 public interface Metric {
-    String metricName();
+    String name();
     Type type();
     Values values();
 }
