@@ -1,4 +1,4 @@
-package com.helidon.adapter.application.domain.model;
+package com.helidon.adapter.application.k6.domain;
 
 import com.helidon.application.domain.model.Type;
 
