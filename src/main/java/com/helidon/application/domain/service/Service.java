@@ -1,5 +1,7 @@
 package com.helidon.application.domain.service;
 
+import com.helidon.application.domain.model.Metrics;
+
 public interface Service {
-    void sayHello();
+  void saveMetrics(Metrics metrics);
 }
