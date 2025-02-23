@@ -1,12 +1,12 @@
 package com.helidon.adapter.application.domain.model;
 
-import static com.helidon.adapter.application.k6.domain.K6Type.COUNTER;
-import static com.helidon.adapter.application.k6.domain.K6Type.GAUGE;
-import static com.helidon.adapter.application.k6.domain.K6Type.RATE;
-import static com.helidon.adapter.application.k6.domain.K6Type.TREND;
+import static com.helidon.adapter.k6.domain.K6Type.COUNTER;
+import static com.helidon.adapter.k6.domain.K6Type.GAUGE;
+import static com.helidon.adapter.k6.domain.K6Type.RATE;
+import static com.helidon.adapter.k6.domain.K6Type.TREND;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.helidon.adapter.application.k6.domain.K6Type;
+import com.helidon.adapter.k6.domain.K6Type;
 import org.junit.jupiter.api.Test;
 
 class K6TypeTest {
