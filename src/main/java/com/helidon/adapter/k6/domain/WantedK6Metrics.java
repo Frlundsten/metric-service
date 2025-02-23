@@ -1,4 +1,4 @@
-package com.helidon.adapter.application.k6.in;
+package com.helidon.adapter.k6.domain;
 
 import com.helidon.application.domain.WantedMetrics;
 

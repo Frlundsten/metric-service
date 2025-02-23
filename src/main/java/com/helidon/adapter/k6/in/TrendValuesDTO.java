@@ -1,4 +1,4 @@
-package com.helidon.adapter.application.k6.in;
+package com.helidon.adapter.k6.in;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.helidon.application.domain.model.Values;

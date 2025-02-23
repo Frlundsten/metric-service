@@ -2,6 +2,7 @@ package com.helidon.adapter.application.k6.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.helidon.adapter.k6.domain.RateValues;
 import org.junit.jupiter.api.Test;
 
 class K6RateValuesTest {

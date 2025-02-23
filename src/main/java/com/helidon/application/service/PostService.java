@@ -1,4 +1,4 @@
-package com.helidon.adapter.application.k6.domain.service;
+package com.helidon.application.service;
 
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.domain.service.Service;
