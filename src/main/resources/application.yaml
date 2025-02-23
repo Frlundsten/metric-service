@@ -4,6 +4,6 @@ server:
 db:
   source: "jdbc"
   connection:
-    url: "jdbc:mysql://127.0.0.1:3306/pokemon"
+    url: "jdbc:postgresql://localhost:5432/helidon"
     username: "user"
     password: "password"
