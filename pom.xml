@@ -36,12 +36,20 @@
         </dependency>
         <dependency>
             <groupId>io.helidon.dbclient</groupId>
+            <artifactId>helidon-dbclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.helidon.dbclient</groupId>
             <artifactId>helidon-dbclient-hikari</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.helidon.dbclient</groupId>
+            <artifactId>helidon-dbclient-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.3</version>
+            <version>42.7.4</version>
         </dependency>
         <dependency>
             <groupId>io.helidon.http.media</groupId>
@@ -59,6 +67,12 @@
             <version>5.11.1</version>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.11.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.27.3</version>
@@ -66,10 +80,9 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>5.15.2</version>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.14.0</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>

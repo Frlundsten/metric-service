@@ -3,6 +3,9 @@ package com.helidon.startup;
 import com.helidon.adapter.k6.in.GetHandler;
 import com.helidon.adapter.k6.in.Mapper;
 import com.helidon.adapter.k6.in.PostHandler;
+import com.helidon.adapter.k6.out.DataSourceInstance;
+import com.helidon.adapter.k6.out.MetricJDBCRepository;
+import com.helidon.application.port.out.Repository;
 import com.helidon.application.service.GetService;
 import com.helidon.application.service.PostService;
 import io.helidon.config.Config;
@@ -15,14 +18,21 @@ import io.helidon.webserver.http.HttpRouting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
+
 public class HelidonWebserver {
 
   public static Logger LOG = LoggerFactory.getLogger(HelidonWebserver.class);
 
   public static void setup() {
     Mapper mapper = new Mapper();
+    DataSource dataSource =
+        DataSourceInstance.getDataSource(
+            "jdbc:postgresql://localhost:5432/helidon", "user", "password");
+
+    Repository repository = new MetricJDBCRepository(dataSource);
     GetService getService = new GetService();
-    PostService postService = new PostService();
+    PostService postService = new PostService(repository);
 
     GetHandler getHandler = new GetHandler(getService);
     PostHandler postHandler = new PostHandler(postService, mapper);
