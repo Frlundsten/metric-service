@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - preConditions:
+      - runningAs:
+          username:  user
+
+  - changeSet:
+      id:  1
+      author:  Fredrik L
+      changes:
+        - createTable:
+            tableName:  metrics
+            columns:
+              - column:
+                  name:  id
+                  type:  STRING(32)
+                  constraints:
+                    primaryKey:  true
+                    nullable:  false
+              - column:
+                  name:  data
+                  type:  JSON
+                  constraints:
+                    nullable:  false
+              - column:
+                  name:  created_at
+                  type:  TIMESTAMP
+                  constraints:
+                    nullable: false

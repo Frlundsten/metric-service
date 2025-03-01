@@ -11,6 +11,21 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  liquibase:
+    image: liquibase/liquibase:latest
+    container_name: liquibase-container
+    command: [
+      "liquibase",
+      "--url=jdbc:postgresql://postgres-container:5432/helidon?user=user&password=password",
+      "--changelog-file=/changelog/changelog.yaml",
+      "update",
+    ]
+    volumes:
+      - ./liquibase/changelog:/liquibase/changelog
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
     driver: local
