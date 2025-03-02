@@ -1,9 +1,9 @@
 server:
   port: 8080
   host: "localhost"
-db:
-  source: "jdbc"
-  connection:
-    url: "jdbc:postgresql://localhost:5432/helidon"
-    username: "user"
-    password: "password"
+#db:
+#  source: "jdbc"
+#  connection:
+#    url: "jdbc:postgresql://localhost:5432/helidon"
+#    username: "user"
+#    password: "password"
