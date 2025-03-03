@@ -1,7 +1,7 @@
 package com.helidon.adapter.k6.in;
 
 import com.helidon.application.service.GetService;
-import com.helidon.application.port.in.Handler;
+import io.helidon.webserver.http.Handler;
 import io.helidon.webserver.http.ServerRequest;
 import io.helidon.webserver.http.ServerResponse;
 
@@ -12,7 +12,8 @@ public class GetHandler implements Handler {
     this.getService = getService;
   }
 
-  public void handleRequest(ServerRequest req, ServerResponse res) {
+  @Override
+  public void handle(ServerRequest req, ServerResponse res) {
     //        getService.sayHello();
     res.status(202);
     res.send();

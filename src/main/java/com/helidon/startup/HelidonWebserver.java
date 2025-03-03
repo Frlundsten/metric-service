@@ -15,10 +15,9 @@ import io.helidon.http.media.MediaSupport;
 import io.helidon.http.media.jackson.JacksonSupport;
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.http.HttpRouting;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
 
 public class HelidonWebserver {
 
@@ -34,9 +33,6 @@ public class HelidonWebserver {
     GetService getService = new GetService();
     PostService postService = new PostService(repository);
 
-    GetHandler getHandler = new GetHandler(getService);
-    PostHandler postHandler = new PostHandler(postService, mapper);
-
     Config config = Config.create();
 
     WebServer.builder()
@@ -45,8 +41,8 @@ public class HelidonWebserver {
         .routing(
             HttpRouting.builder()
                 .register()
-                .get(getHandler::handleRequest)
-                .post(postHandler::handleRequest))
+                .get("/metrics", new GetHandler(getService))
+                .post("/metrics", new PostHandler(postService, mapper)))
         .build()
         .start();
 
@@ -55,7 +51,6 @@ public class HelidonWebserver {
 
   private static MediaContext getMediaContext(Config config) {
     MediaSupport jacksonSupport = JacksonSupport.create(config);
-
     return MediaContextConfig.builder().addMediaSupport(jacksonSupport).build();
   }
 }
