@@ -1,10 +1,12 @@
 package com.helidon.adapter.k6.in;
 
 import com.helidon.application.domain.model.Metrics;
-import com.helidon.application.port.in.Handler;
 import com.helidon.application.service.PostService;
+import io.helidon.http.HeaderNames;
+import io.helidon.webserver.http.Handler;
 import io.helidon.webserver.http.ServerRequest;
 import io.helidon.webserver.http.ServerResponse;
+import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,14 +20,25 @@ public class PostHandler implements Handler {
     this.mapper = mapper;
   }
 
-  public void handleRequest(ServerRequest req, ServerResponse res) {
+  @Override
+  public void handle(ServerRequest req, ServerResponse res) {
     LOG.info("Processing a post request..");
-    var reqBody = req.content().as(MetricsRequestDTO.class);
+    try {
+      var headerValue = req.headers().get(HeaderNames.create("repository-id"));
+      var id = headerValue.get();
 
+      var reqBody = req.content().as(MetricsRequestDTO.class);
+
+      var response = handleRequest(reqBody);
+      res.status(200).send(response);
+    } catch (NoSuchElementException e) {
+      res.status(400).send("Header 'repository-id' not found");
+    }
+  }
+
+  private MetricsRequestDTO handleRequest(MetricsRequestDTO reqBody) {
     Metrics metrics = mapper.fromDTO(reqBody.metrics());
-
     postService.saveMetrics(metrics);
-    res.status(200);
-    res.send(metrics);
+    return reqBody;
   }
 }

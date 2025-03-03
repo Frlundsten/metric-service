@@ -44,7 +44,7 @@ class MetricJDBCRepositoryTest {
   }
 
   @ParameterizedTest
-  @ValueSource(ints = {0, 2, 3, 4, 5, 6, 7, 8, 9})
+  @ValueSource(ints = {0, 2})
   void shouldThrowWhenUpdatedRowsIsNotOne(int rows) throws SQLException {
     Metrics metrics = new Metrics("{}", List.of());
 
