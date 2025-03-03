@@ -7,4 +7,9 @@ public enum K6Type implements Type {
   GAUGE,
   COUNTER,
   RATE;
+
+  @Override
+  public String getType() {
+    return this.name();
+  }
 }
