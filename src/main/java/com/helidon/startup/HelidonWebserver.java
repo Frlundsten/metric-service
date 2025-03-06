@@ -1,13 +1,15 @@
 package com.helidon.startup;
 
-import com.helidon.adapter.k6.in.GetHandler;
-import com.helidon.adapter.k6.in.Mapper;
-import com.helidon.adapter.k6.in.PostHandler;
-import com.helidon.adapter.k6.out.DataSourceInstance;
-import com.helidon.adapter.k6.out.MetricJDBCRepository;
-import com.helidon.application.port.out.Repository;
-import com.helidon.application.service.GetService;
-import com.helidon.application.service.PostService;
+import com.helidon.adapter.in.rest.DelegatingService;
+import com.helidon.adapter.in.rest.GetMetricsHandler;
+import com.helidon.adapter.in.rest.Mapper;
+import com.helidon.adapter.in.rest.CreateMetricsHandler;
+import com.helidon.adapter.out.MetricJDBCRepository;
+import com.helidon.application.domain.service.MetricService;
+import com.helidon.application.port.in.create.ForCreateMetrics;
+import com.helidon.application.port.in.manage.ForManagingMetrics;
+import com.helidon.application.port.out.create.ForPersistingMetrics;
+import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
 import io.helidon.config.Config;
 import io.helidon.http.media.MediaContext;
 import io.helidon.http.media.MediaContextConfig;
@@ -29,20 +31,23 @@ public class HelidonWebserver {
         DataSourceInstance.getDataSource(
             "jdbc:postgresql://localhost:5432/helidon", "user", "password");
 
-    Repository repository = new MetricJDBCRepository(dataSource);
-    GetService getService = new GetService();
-    PostService postService = new PostService(repository);
+    MetricJDBCRepository repository = new MetricJDBCRepository(dataSource);
+    ForPersistingMetrics persist = repository;
+    ForManagingStoredMetrics manageStored = repository;
+    MetricService metricService = new MetricService(persist, manageStored);
+    ForCreateMetrics metricsCreation = metricService;
+    ForManagingMetrics metricsManaging = metricService;
+    CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricsCreation, mapper);
+    GetMetricsHandler getMetricsHandler = new GetMetricsHandler(metricsManaging,mapper);
+
+    DelegatingService delegatingService = new DelegatingService(createMetricsHandler,getMetricsHandler);
 
     Config config = Config.create();
 
     WebServer.builder()
         .mediaContext(getMediaContext(config))
         .config(config.get("server"))
-        .routing(
-            HttpRouting.builder()
-                .register()
-                .get("/metrics", new GetHandler(getService))
-                .post("/metrics", new PostHandler(postService, mapper)))
+        .routing(HttpRouting.builder().register("/metrics", delegatingService))
         .build()
         .start();
 
