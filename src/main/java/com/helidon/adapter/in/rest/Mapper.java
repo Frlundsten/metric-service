@@ -26,6 +26,7 @@ public class Mapper {
   ObjectMapper mapper = new ObjectMapper();
 
   public Metrics fromDTO(Map<String, Object> dto) {
+      log.debug("From DTO: {}", dto);
     String json;
     List<Metric> metricList = new ArrayList<>();
 

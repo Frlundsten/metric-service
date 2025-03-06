@@ -27,7 +27,7 @@ public abstract class DataSourceInstance {
   }
 
   private static DataSource createDataSource(String jdbcUrl, String username, String password) {
-    LOG.info("Creating DataSource with connectionString: {}", jdbcUrl);
+    LOG.debug("Creating DataSource with connectionString: {}", jdbcUrl);
     var config = new HikariConfig();
     config.setJdbcUrl(jdbcUrl);
     config.setUsername(username);

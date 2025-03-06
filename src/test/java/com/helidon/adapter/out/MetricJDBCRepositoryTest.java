@@ -3,11 +3,16 @@ package com.helidon.adapter.out;
 import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.helidon.application.domain.model.K6Metric;
+import com.helidon.application.domain.model.K6Type;
+import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.Values;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -28,20 +33,21 @@ class MetricJDBCRepositoryTest {
   @Mock Connection connection;
   @Mock PreparedStatement preparedStatement;
 
-  @InjectMocks
-  MetricJDBCRepository repository;
+  @InjectMocks MetricJDBCRepository repository;
 
   @Test
   void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
-    Metrics metrics = new Metrics("{}", List.of());
+    Metric metric = new K6Metric("http-test", K6Type.COUNTER, mock(Values.class));
+    Metrics metrics = new Metrics("{}", List.of(metric));
 
     when(dataSource.getConnection()).thenReturn(connection);
     when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
     when(preparedStatement.executeUpdate()).thenReturn(1);
+    when(preparedStatement.executeBatch()).thenReturn(new int[] {1});
 
     assertThatNoException().isThrownBy(() -> repository.saveMetrics(metrics));
     verify(connection, times(1)).close();
-    verify(preparedStatement, times(1)).close();
+    verify(preparedStatement, times(2)).close();
   }
 
   @ParameterizedTest

@@ -15,6 +15,7 @@ public class CreateMetricsHandler implements Handler {
   public static Logger LOG = LoggerFactory.getLogger(CreateMetricsHandler.class);
   private final ForCreateMetrics metricsCreation;
   private final Mapper mapper;
+  private MetricsRequestDTO response;
 
   public CreateMetricsHandler(
       ForCreateMetrics metricsCreation, Mapper mapper) {
@@ -24,7 +25,7 @@ public class CreateMetricsHandler implements Handler {
 
   @Override
   public void handle(ServerRequest req, ServerResponse res) {
-    LOG.info("Processing a post request..");
+    LOG.debug("Processing a post request..");
     try {
       var headerValue = req.headers().get(HeaderNames.create("repository-id"));
       var id = headerValue.get();

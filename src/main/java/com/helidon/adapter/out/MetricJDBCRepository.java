@@ -22,7 +22,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
   @Override
   public void saveMetrics(Metrics metrics) {
-    log.info("Saving metrics {}", metrics);
+    log.debug("Saving metrics {}", metrics);
 
     try (var conn = dataSource.getConnection()) {
       conn.setAutoCommit(false);

@@ -7,7 +7,8 @@ public class DelegatingService implements HttpService {
 
   private final CreateMetricsHandler metricsHandler;
 
-  public DelegatingService(CreateMetricsHandler metricsHandler, GetMetricsHandler getMetricsHandler) {
+  public DelegatingService(
+      CreateMetricsHandler metricsHandler, GetMetricsHandler getMetricsHandler) {
     this.metricsHandler = metricsHandler;
   }
 

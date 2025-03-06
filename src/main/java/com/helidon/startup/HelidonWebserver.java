@@ -51,7 +51,7 @@ public class HelidonWebserver {
         .build()
         .start();
 
-    LOG.info("HelidonWebserver started");
+    LOG.debug("HelidonWebserver started");
   }
 
   private static MediaContext getMediaContext(Config config) {

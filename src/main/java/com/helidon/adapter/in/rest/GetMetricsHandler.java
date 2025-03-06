@@ -20,7 +20,7 @@ public class GetMetricsHandler implements Handler {
 
   @Override
   public void handle(ServerRequest req, ServerResponse res) {
-    LOG.info("Processing a get request..");
+    LOG.debug("Processing a get request..");
   }
 
   private MetricsRequestDTO handleRequest(String id) {
