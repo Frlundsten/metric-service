@@ -22,11 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Mapper {
-  public static Logger log = LoggerFactory.getLogger(Mapper.class);
+  public static Logger LOG = LoggerFactory.getLogger(Mapper.class);
   ObjectMapper mapper = new ObjectMapper();
 
   public Metrics fromDTO(Map<String, Object> dto) {
-      log.debug("From DTO: {}", dto);
+      LOG.debug("From DTO: {}", dto);
     String json;
     List<Metric> metricList = new ArrayList<>();
 
