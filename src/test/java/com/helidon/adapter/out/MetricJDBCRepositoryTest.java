@@ -4,30 +4,33 @@ import static com.helidon.MetricFactory.createMetricsWithEmptyList;
 import static com.helidon.MetricFactory.createMetricsWithList;
 import static com.helidon.ProvideScope.withScope;
 import static org.assertj.core.api.Assertions.assertThatException;
-import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.helidon.application.domain.model.K6Metric;
+import com.helidon.application.domain.model.K6Type;
+import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.Values;
 import com.helidon.exception.DatabaseInsertException;
-import com.helidon.exception.EmptyMetricListException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import io.helidon.dbclient.DbClient;
+import io.helidon.dbclient.DbTransaction;
 import java.sql.SQLException;
-import javax.sql.DataSource;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import java.sql.Timestamp;
+import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
 class MetricJDBCRepositoryTest {
 
+  @Mock DbClient dbClient;
+  @Mock DbTransaction dbTransaction;
   public static DataSource dataSource;
   public static Connection connection;
   public static PreparedStatement preparedStatement;
@@ -50,15 +53,15 @@ class MetricJDBCRepositoryTest {
   void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
     Metrics metrics = createMetricsWithList();
 
-    when(dataSource.getConnection()).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-    when(preparedStatement.executeUpdate()).thenReturn(1);
-    when(preparedStatement.executeBatch()).thenReturn(new int[] {1});
+    when(dbClient.transaction()).thenReturn(dbTransaction);
+    when(dbTransaction.namedInsert(anyString(), any(Object[].class))).thenReturn(1L);
 
-    assertThatNoException().isThrownBy(() -> withScope(() -> repository.saveMetrics(metrics)));
-    verify(connection, times(1)).close();
-    verify(preparedStatement, times(2)).close();
-    verify(connection, never()).rollback();
+    repository.saveMetrics(metrics);
+
+    verify(dbTransaction).commit();
+    verify(dbTransaction)
+        .namedInsert(
+            "insertMetrics", metrics.id(), metrics.data(), Timestamp.from(metrics.timestamp()));
   }
 
   @ParameterizedTest
@@ -66,10 +69,13 @@ class MetricJDBCRepositoryTest {
   void shouldThrowWhenUpdatedRowsIsNotOne(int rows) throws SQLException {
     Metrics metrics = createMetricsWithList();
 
-    when(dataSource.getConnection()).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-    when(preparedStatement.executeUpdate()).thenReturn(rows);
+    when(dbClient.transaction()).thenReturn(dbTransaction);
+    when(dbTransaction.namedInsert(anyString(), any(Object[].class))).thenReturn((long) rows);
 
+    assertThatException()
+        .isThrownBy(() -> repository.saveMetrics(metrics))
+        .isInstanceOf(DatabaseInsertException.class)
+        .withMessage("Expected only one row");
     assertThatException()
         .isThrownBy(() -> withScope(() -> repository.saveMetrics(metrics)))
         .isInstanceOf(DatabaseInsertException.class)

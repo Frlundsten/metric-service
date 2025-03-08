@@ -8,6 +8,7 @@ import com.helidon.adapter.out.entity.MetricsEntity;
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
+import com.helidon.exception.DatabaseInsertException;
 import io.helidon.dbclient.DbClient;
 import java.sql.Timestamp;
 import java.util.List;
@@ -15,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingStoredMetrics {
-  public static final Logger LOG = LoggerFactory.getLogger(MetricJDBCRepository.class);
-  private final DataSource dataSource;
+  public static Logger LOG = LoggerFactory.getLogger(MetricJDBCRepository.class);
+  private final DbClient dbClient;
 
   public MetricJDBCRepository(DbClient dbClient) {
     this.dbClient = dbClient;
@@ -30,64 +31,34 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
     var db = dbClient.transaction();
     try {
-      db.namedInsert(
-          "insertMetrics", metrics.id(), metrics.data(), Timestamp.from(metrics.timestamp()));
-      for (Metric metric : metrics.metricList()) {
-        db.namedInsert(
-            "insertSingleMetric",
-            metric.id(),
-            metric.name(),
-            metrics.id(),
-            metric.type().getType());
+      var expectedRows =
+          db.namedInsert(
+              "insertMetrics", metrics.id(), metrics.data(), Timestamp.from(metrics.timestamp()));
+
+      if (expectedRows != 1) {
+        throw new DatabaseInsertException("Expected only one row");
       }
 
-  private void saveMetricsData(Connection conn, Metrics metrics) throws SQLException {
-    //    String sql = "INSERT INTO metrics VALUES (?, ?::JSON, ?)";
-    //
-    //    try (var stmt = conn.prepareStatement(sql)) {
-    //      stmt.setString(1, metrics.id());
-    //      stmt.setString(2, metrics.data());
-    //      stmt.setTimestamp(3, Timestamp.from(metrics.timestamp()));
-    //
-    //      int rows = stmt.executeUpdate();
-    //
-    //      if (rows != 1) {
-    //        throw new SQLException("Rows affected: " + rows);
-    //      }
-    //
-    //    } catch (SQLException e) {
-    //      conn.rollback();
-    //      log.error("Rolling back transaction");
-    //      throw e;
-    //    }
-  }
+      for (Metric metric : metrics.metricList()) {
+        var rowPerMetric =
+            db.namedInsert(
+                "insertSingleMetric",
+                metric.id(),
+                metric.name(),
+                metrics.id(),
+                metric.type().getType());
 
-  private void saveMetrics(Connection conn, String metricsId, List<Metric> metrics)
-      throws SQLException {
-    //    String sql = "INSERT INTO metric VALUES (?, ?, ?, ?)";
-    //
-    //    try (var stmt = conn.prepareStatement(sql)) {
-    //
-    //      for (Metric metric : metrics) {
-    //        stmt.setString(1, metric.id());
-    //        stmt.setString(2, metric.name());
-    //        stmt.setString(3, metricsId);
-    //        stmt.setString(4, metric.type().getType());
-    //
-    //        stmt.addBatch();
-    //      }
-    //
-    //      var responseList = stmt.executeBatch();
-    //
-    //      if (responseList.length != metrics.size()) {
-    //        throw new SQLException("Batch update error. Rows affected: " + responseList.length);
-    //      }
-    //
-    //    } catch (SQLException e) {
-    //      conn.rollback();
-    //      log.error("Rolling back transaction");
-    //      throw e;
-    //    }
+        if (rowPerMetric != 1) {
+          throw new DatabaseInsertException("Expected only one row");
+        }
+      }
+
+      db.commit();
+    } catch (Exception e) {
+      LOG.error(e.getMessage());
+      db.rollback();
+      throw e;
+    }
   }
 
   @Override
