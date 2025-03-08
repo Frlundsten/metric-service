@@ -8,15 +8,12 @@ import com.helidon.adapter.out.entity.MetricsEntity;
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
-import com.helidon.exception.DatabaseInsertException;
-import com.helidon.exception.EmptyMetricListException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +22,8 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   public static final Logger LOG = LoggerFactory.getLogger(MetricJDBCRepository.class);
   private final DataSource dataSource;
 
-  public MetricJDBCRepository(DataSource dataSource) {
-    this.dataSource = dataSource;
+  public MetricJDBCRepository(DbClient dbClient) {
+    this.dbClient = dbClient;
   }
 
   @Override
@@ -35,71 +32,70 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
     var metricsEntity = fromDomain(metrics);
 
-    try (var conn = dataSource.getConnection()) {
-      conn.setAutoCommit(false);
-      saveMetricsData(conn, metricsEntity);
-      saveMetrics(conn, metricsEntity.id(), metricsEntity.metricList());
-      conn.commit();
-      LOG.debug("Metrics saved to database");
-    } catch (SQLException e) {
-      throw new DatabaseInsertException("Error when persisting metrics", e);
-    }
+    dbClient
+            .transaction()
+            .namedInsert("insertMetrics", metrics.id(), metrics.data(), Timestamp.from(metrics.timestamp()));
+
+    //    try (var conn = dataSource.getConnection()) {
+    //      conn.setAutoCommit(false);
+    //
+    //      saveMetricsData(conn, metrics);
+    //      saveMetrics(conn, metrics.id(), metrics.metricList());
+    //
+    //      conn.commit();
+    //    } catch (SQLException e) {
+    //      log.error("Exception while saving metrics", e);
+    //      throw new RuntimeException("Exception while saving metrics", e);
+    //    }
   }
 
-  private void saveMetricsData(Connection conn, MetricsEntity metricsToPersist)
-      throws SQLException {
-    String sql = "INSERT INTO metrics" + " VALUES (?, ?::json, ?,?)";
-    var repositoryId = RepositoryId.getScopedValue().value();
-
-    try (var stmt = conn.prepareStatement(sql)) {
-      stmt.setString(1, metricsToPersist.id());
-      stmt.setString(2, metricsToPersist.data());
-      stmt.setTimestamp(3, Timestamp.from(metricsToPersist.timestamp()));
-      stmt.setString(4, repositoryId);
-
-      int rows = stmt.executeUpdate();
-
-      if (rows != 1) {
-        LOG.error("Failed to insert metrics {}", metricsToPersist);
-        throw new DatabaseInsertException("Expected one row update but was: " + rows);
-      }
-
-    } catch (SQLException e) {
-      conn.rollback();
-      throw e;
-    } catch (DatabaseInsertException e) {
-      conn.rollback();
-      LOG.error("Unable to insert metrics {}", metricsToPersist);
-      throw e;
-    }
+  private void saveMetricsData(Connection conn, Metrics metrics) throws SQLException {
+    //    String sql = "INSERT INTO metrics VALUES (?, ?::JSON, ?)";
+    //
+    //    try (var stmt = conn.prepareStatement(sql)) {
+    //      stmt.setString(1, metrics.id());
+    //      stmt.setString(2, metrics.data());
+    //      stmt.setTimestamp(3, Timestamp.from(metrics.timestamp()));
+    //
+    //      int rows = stmt.executeUpdate();
+    //
+    //      if (rows != 1) {
+    //        throw new SQLException("Rows affected: " + rows);
+    //      }
+    //
+    //    } catch (SQLException e) {
+    //      conn.rollback();
+    //      log.error("Rolling back transaction");
+    //      throw e;
+    //    }
   }
 
   private void saveMetrics(Connection conn, String metricsId, List<MetricEntity> metrics)
       throws SQLException {
-    if (metrics.isEmpty()) {
-      LOG.error("No metrics to save");
-      throw new EmptyMetricListException("No metrics to save");
-    }
-    LOG.debug(
-        "Saving ({}) metrics collected from repository ({})",
-        metrics.size(),
-        RepositoryId.getScopedValue());
-    String sql = "INSERT INTO metric VALUES (?, ?, ?, ?, ?::jsonb)";
-
-    try (var stmt = conn.prepareStatement(sql)) {
-      stmt.setString(3, metricsId); // Set outside loop since it's the same value for every metric
-      for (MetricEntity metric : metrics) {
-        stmt.setString(1, metric.id());
-        stmt.setString(2, metric.name());
-        stmt.setString(4, metric.type());
-        stmt.setString(5, metric.values());
-        stmt.addBatch();
-      }
-      stmt.executeBatch();
-    } catch (SQLException e) {
-      conn.rollback();
-      throw new DatabaseInsertException("Error when saving metric", e);
-    }
+//    if (metrics.isEmpty()) {
+//      LOG.error("No metrics to save");
+//      throw new EmptyMetricListException("No metrics to save");
+//    }
+//    LOG.debug(
+//        "Saving ({}) metrics collected from repository ({})",
+//        metrics.size(),
+//        RepositoryId.getScopedValue());
+//    String sql = "INSERT INTO metric VALUES (?, ?, ?, ?, ?::jsonb)";
+//
+//    try (var stmt = conn.prepareStatement(sql)) {
+//      stmt.setString(3, metricsId); // Set outside loop since it's the same value for every metric
+//      for (MetricEntity metric : metrics) {
+//        stmt.setString(1, metric.id());
+//        stmt.setString(2, metric.name());
+//        stmt.setString(4, metric.type());
+//        stmt.setString(5, metric.values());
+//        stmt.addBatch();
+//      }
+//      stmt.executeBatch();
+//    } catch (SQLException e) {
+//      conn.rollback();
+//      throw new DatabaseInsertException("Error when saving metric", e);
+//    }
   }
 
   @Override
