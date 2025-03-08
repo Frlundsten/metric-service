@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class DataSourceInstance {
-  private static Logger LOG = LoggerFactory.getLogger(DataSourceInstance.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DataSourceInstance.class);
 
   private static DataSourceSingleton dataSource;
 
