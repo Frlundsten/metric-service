@@ -13,6 +13,7 @@ import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.domain.model.Values;
+import com.helidon.exception.DatabaseInsertException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -59,7 +60,10 @@ class MetricJDBCRepositoryTest {
     when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
     when(preparedStatement.executeUpdate()).thenReturn(rows);
 
-    assertThatException().isThrownBy(() -> repository.saveMetrics(metrics));
+    assertThatException()
+        .isThrownBy(() -> repository.saveMetrics(metrics))
+        .isInstanceOf(DatabaseInsertException.class)
+        .withMessage("Expected one row update but was: " + rows);
     verify(connection, times(1)).close();
     verify(preparedStatement, times(1)).close();
   }

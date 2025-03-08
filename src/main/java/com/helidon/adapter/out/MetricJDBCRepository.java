@@ -4,6 +4,7 @@ import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
+import com.helidon.exception.DatabaseInsertException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -13,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingStoredMetrics {
-  public static Logger log = LoggerFactory.getLogger(MetricJDBCRepository.class);
+  public static Logger LOG = LoggerFactory.getLogger(MetricJDBCRepository.class);
   private final DataSource dataSource;
 
   public MetricJDBCRepository(DataSource dataSource) {
@@ -22,7 +23,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
   @Override
   public void saveMetrics(Metrics metrics) {
-    log.debug("Saving metrics {}", metrics);
+    LOG.debug("Saving metrics {}", metrics);
 
     try (var conn = dataSource.getConnection()) {
       conn.setAutoCommit(false);
@@ -31,9 +32,12 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       saveMetrics(conn, metrics.id(), metrics.metricList());
 
       conn.commit();
+    } catch (DatabaseInsertException e) {
+      LOG.error(e.getMessage());
+      throw e;
     } catch (SQLException e) {
-      log.error("Exception while saving metrics", e);
-      throw new RuntimeException("Exception while saving metrics", e);
+      LOG.error("Exception while saving metrics", e);
+      throw new DatabaseInsertException(e.getMessage());
     }
   }
 
@@ -48,12 +52,12 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       int rows = stmt.executeUpdate();
 
       if (rows != 1) {
-        throw new SQLException("Rows affected: " + rows);
+        throw new DatabaseInsertException("Expected one row update but was: " + rows);
       }
 
     } catch (SQLException e) {
       conn.rollback();
-      log.error("Rolling back transaction");
+      LOG.error("Rolling back transaction");
       throw e;
     }
   }
@@ -76,12 +80,13 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       var responseList = stmt.executeBatch();
 
       if (responseList.length != metrics.size()) {
-        throw new SQLException("Batch update error. Rows affected: " + responseList.length);
+        throw new DatabaseInsertException(
+            "Batch update error. Rows affected: " + responseList.length);
       }
 
     } catch (SQLException e) {
       conn.rollback();
-      log.error("Rolling back transaction");
+      LOG.error("Rolling back transaction");
       throw e;
     }
   }
