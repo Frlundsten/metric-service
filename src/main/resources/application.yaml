@@ -1,19 +1,6 @@
 server:
   port: 8080
   host: "localhost"
-  features:
-    limits:
-      # Limit concurrency. Helidon uses virtual threads, with system memory as the only limit.
-      # However, this can lead to concurrency levels that may exceed the capacity of components like a database.
-      concurrency-limit:
-          aimd:
-            min-limit: 100
-            max-limit: 1000
-            initial-limit: 500
-            timeout: "PT0.5S"
-            backoff-ratio: 0.75
-            queue-length: 300
-            queue-timeout: PT1S
 
 #db:
 #  source: "jdbc"
