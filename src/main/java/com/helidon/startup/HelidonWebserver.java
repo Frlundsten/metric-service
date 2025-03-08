@@ -1,15 +1,11 @@
 package com.helidon.startup;
 
+import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
 import com.helidon.adapter.in.rest.GetMetricsHandler;
 import com.helidon.adapter.in.rest.Mapper;
-import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.out.MetricJDBCRepository;
 import com.helidon.application.domain.service.MetricService;
-import com.helidon.application.port.in.create.ForCreateMetrics;
-import com.helidon.application.port.in.manage.ForManagingMetrics;
-import com.helidon.application.port.out.create.ForPersistingMetrics;
-import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
 import io.helidon.config.Config;
 import io.helidon.http.media.MediaContext;
 import io.helidon.http.media.MediaContextConfig;
@@ -32,15 +28,12 @@ public class HelidonWebserver {
             "jdbc:postgresql://localhost:5432/helidon", "user", "password");
 
     MetricJDBCRepository repository = new MetricJDBCRepository(dataSource);
-    ForPersistingMetrics persist = repository;
-    ForManagingStoredMetrics manageStored = repository;
-    MetricService metricService = new MetricService(persist, manageStored);
-    ForCreateMetrics metricsCreation = metricService;
-    ForManagingMetrics metricsManaging = metricService;
-    CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricsCreation, mapper);
-    GetMetricsHandler getMetricsHandler = new GetMetricsHandler(metricsManaging,mapper);
+    MetricService metricService = new MetricService(repository, repository);
+    CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricService, mapper);
+    GetMetricsHandler getMetricsHandler = new GetMetricsHandler(metricService, mapper);
 
-    DelegatingService delegatingService = new DelegatingService(createMetricsHandler,getMetricsHandler);
+    DelegatingService delegatingService =
+        new DelegatingService(createMetricsHandler, getMetricsHandler);
 
     Config config = Config.create();
 
