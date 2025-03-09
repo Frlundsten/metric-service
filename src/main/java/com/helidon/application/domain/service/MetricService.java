@@ -5,6 +5,8 @@ import com.helidon.application.port.in.create.ForCreateMetrics;
 import com.helidon.application.port.in.manage.ForManagingMetrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
+import java.time.Instant;
+import java.util.List;
 
 public class MetricService implements ForCreateMetrics, ForManagingMetrics {
 
@@ -25,5 +27,10 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
   @Override
   public Metrics getMetrics(String id) {
     return manageStoredMetrics.get(id);
+  }
+
+  @Override
+  public List<Metrics> getBetweenDates(Instant from, Instant to) {
+    return manageStoredMetrics.getBetweenDates(from, to);
   }
 }
