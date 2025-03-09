@@ -15,10 +15,8 @@ public class CreateMetricsHandler implements Handler {
   public static Logger LOG = LoggerFactory.getLogger(CreateMetricsHandler.class);
   private final ForCreateMetrics metricsCreation;
   private final Mapper mapper;
-  private MetricsRequestDTO response;
 
-  public CreateMetricsHandler(
-      ForCreateMetrics metricsCreation, Mapper mapper) {
+  public CreateMetricsHandler(ForCreateMetrics metricsCreation, Mapper mapper) {
     this.metricsCreation = metricsCreation;
     this.mapper = mapper;
   }
