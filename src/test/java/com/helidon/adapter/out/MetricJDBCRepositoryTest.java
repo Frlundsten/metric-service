@@ -8,10 +8,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.helidon.application.domain.CounterValues;
 import com.helidon.application.domain.model.K6Metric;
 import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.Type;
 import com.helidon.application.domain.model.Values;
 import com.helidon.exception.DatabaseInsertException;
 import java.sql.Connection;
@@ -38,7 +40,10 @@ class MetricJDBCRepositoryTest {
 
   @Test
   void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
-    Metric metric = new K6Metric("http-test", K6Type.COUNTER, mock(Values.class));
+    Metric metric = mock(Metric.class);
+    when(metric.type()).thenReturn(K6Type.COUNTER);
+    CounterValues val = new CounterValues(2.0,2.0);
+    when(metric.values()).thenReturn(val);
     Metrics metrics = new Metrics("{}", List.of(metric));
 
     when(dataSource.getConnection()).thenReturn(connection);
@@ -48,7 +53,7 @@ class MetricJDBCRepositoryTest {
 
     assertThatNoException().isThrownBy(() -> repository.saveMetrics(metrics));
     verify(connection, times(1)).close();
-    verify(preparedStatement, times(2)).close();
+    verify(preparedStatement, times(3)).close();
   }
 
   @ParameterizedTest
