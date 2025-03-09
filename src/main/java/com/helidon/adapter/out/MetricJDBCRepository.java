@@ -19,6 +19,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
@@ -214,5 +216,35 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   @Override
   public Metrics get(String id) {
     return null;
+  }
+
+  @Override
+  public List<Metrics> getBetweenDates(Instant start, Instant end) {
+    Timestamp from = Timestamp.from(start);
+    Timestamp to = Timestamp.from(end);
+
+    var sql = "SELECT * FROM metrics WHERE created_at BETWEEN ? AND ?";
+
+    try (var conn = dataSource.getConnection()) {
+
+      try (var stmt = conn.prepareStatement(sql)) {
+        stmt.setTimestamp(1, from);
+        stmt.setTimestamp(2, to);
+
+        var rs = stmt.executeQuery();
+        List<Metrics> metricsList = new ArrayList<>();
+        while (rs.next()) {
+          metricsList.add(
+              new Metrics(
+                  rs.getString("id"),
+                  rs.getString("data"),
+                  rs.getTimestamp("created_at").toInstant(),
+                  List.of()));
+        }
+        return metricsList;
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
