@@ -44,9 +44,64 @@ databaseChangeLog:
               - column:
                   name: type
                   type: VARCHAR (50)
+        - createTable:
+            tableName: metric_values
+            columns:
+              - column:
+                  name: id
+                  type: VARCHAR (36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: metric_id
+                  type: VARCHAR (36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: count
+                  type: DECIMAL
+              - column:
+                  name: value
+                  type: DECIMAL
+              - column:
+                  name: min
+                  type: DECIMAL
+              - column:
+                  name: max
+                  type: DECIMAL
+              - column:
+                  name: rate
+                  type: DECIMAL
+              - column:
+                  name: passes
+                  type: DECIMAL
+              - column:
+                  name: fails
+                  type: DECIMAL
+              - column:
+                  name: avg
+                  type: DECIMAL
+              - column:
+                  name: med
+                  type: DECIMAL
+              - column:
+                  name: p90
+                  type: DECIMAL
+              - column:
+                  name: p95
+                  type: DECIMAL
+
         - addForeignKeyConstraint:
             baseTableName: metric
             baseColumnNames: metrics_id
             constraintName: fk_metric_metrics_id
             referencedTableName: metrics
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            baseTableName: metric_values
+            baseColumnNames: metric_id
+            constraintName: fk_metric_metric_id
+            referencedTableName: metric
             referencedColumnNames: id
