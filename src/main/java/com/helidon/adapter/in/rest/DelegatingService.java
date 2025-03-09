@@ -6,19 +6,16 @@ import io.helidon.webserver.http.HttpService;
 public class DelegatingService implements HttpService {
 
   private final CreateMetricsHandler metricsHandler;
+  private final GetMetricsHandler getMetricsHandler;
 
   public DelegatingService(
       CreateMetricsHandler metricsHandler, GetMetricsHandler getMetricsHandler) {
     this.metricsHandler = metricsHandler;
+    this.getMetricsHandler = getMetricsHandler;
   }
 
   @Override
   public void routing(HttpRules rules) {
-    rules
-        .post(metricsHandler)
-        .get(
-            (req, resp) -> {
-              resp.status(200).send("Received 'GET' request");
-            });
+    rules.post(metricsHandler).get(getMetricsHandler);
   }
 }
