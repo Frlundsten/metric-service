@@ -5,11 +5,11 @@ import com.helidon.adapter.in.rest.DelegatingService;
 import com.helidon.adapter.in.rest.GetMetricsHandler;
 import com.helidon.adapter.in.rest.Mapper;
 import com.helidon.adapter.out.MetricJDBCRepository;
+import com.helidon.application.ObjectMapperFactory;
 import com.helidon.application.domain.service.MetricService;
 import io.helidon.config.Config;
 import io.helidon.http.media.MediaContext;
 import io.helidon.http.media.MediaContextConfig;
-import io.helidon.http.media.MediaSupport;
 import io.helidon.http.media.jackson.JacksonSupport;
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.http.HttpRouting;
@@ -38,7 +38,7 @@ public class HelidonWebserver {
     Config config = Config.create();
 
     WebServer.builder()
-        .mediaContext(getMediaContext(config))
+        .mediaContext(getJackson())
         .config(config.get("server"))
         .routing(HttpRouting.builder().register("/metrics", delegatingService))
         .build()
@@ -47,8 +47,9 @@ public class HelidonWebserver {
     LOG.debug("HelidonWebserver started");
   }
 
-  private static MediaContext getMediaContext(Config config) {
-    MediaSupport jacksonSupport = JacksonSupport.create(config);
-    return MediaContextConfig.builder().addMediaSupport(jacksonSupport).build();
+  private static MediaContext getJackson() {
+    return MediaContextConfig.builder()
+        .addMediaSupport(JacksonSupport.create(ObjectMapperFactory.create()))
+        .build();
   }
 }
