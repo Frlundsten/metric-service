@@ -9,12 +9,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.helidon.application.domain.CounterValues;
-import com.helidon.application.domain.model.K6Metric;
 import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Metrics;
-import com.helidon.application.domain.model.Type;
-import com.helidon.application.domain.model.Values;
 import com.helidon.exception.DatabaseInsertException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
