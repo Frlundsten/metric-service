@@ -39,7 +39,7 @@ class MetricJDBCRepositoryTest {
   void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
     Metric metric = mock(Metric.class);
     when(metric.type()).thenReturn(K6Type.COUNTER);
-    CounterValues val = new CounterValues(2.0, 2.0);
+    CounterValues val = new CounterValues(2.0,2.0);
     when(metric.values()).thenReturn(val);
     Metrics metrics = new Metrics("{}", List.of(metric));
 
