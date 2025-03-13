@@ -24,7 +24,7 @@ public class GetMetricsHandler implements Handler {
 
   @Override
   public void handle(ServerRequest req, ServerResponse res) {
-    LOG.debug("Processing a get request..");
+    LOG.debug("Processing a GET request..");
     try {
       var headerValue = req.headers().get(HeaderNames.create("repository-id"));
       var id = headerValue.get();
