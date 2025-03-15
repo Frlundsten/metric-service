@@ -1,5 +1,6 @@
 package com.helidon.adapter.out;
 
+import static com.helidon.ProvideScope.withScope;
 import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -39,7 +40,7 @@ class MetricJDBCRepositoryTest {
   void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
     Metric metric = mock(Metric.class);
     when(metric.type()).thenReturn(K6Type.COUNTER);
-    CounterValues val = new CounterValues(2.0,2.0);
+    CounterValues val = new CounterValues(2.0, 2.0);
     when(metric.values()).thenReturn(val);
     Metrics metrics = new Metrics("{}", List.of(metric));
 
@@ -48,7 +49,7 @@ class MetricJDBCRepositoryTest {
     when(preparedStatement.executeUpdate()).thenReturn(1);
     when(preparedStatement.executeBatch()).thenReturn(new int[] {1});
 
-    assertThatNoException().isThrownBy(() -> repository.saveMetrics(metrics));
+    assertThatNoException().isThrownBy(() -> withScope(() -> repository.saveMetrics(metrics)));
     verify(connection, times(1)).close();
     verify(preparedStatement, times(3)).close();
   }
@@ -63,7 +64,7 @@ class MetricJDBCRepositoryTest {
     when(preparedStatement.executeUpdate()).thenReturn(rows);
 
     assertThatException()
-        .isThrownBy(() -> repository.saveMetrics(metrics))
+        .isThrownBy(() -> withScope(() -> repository.saveMetrics(metrics)))
         .isInstanceOf(DatabaseInsertException.class)
         .withMessage("Expected one row update but was: " + rows);
     verify(connection, times(1)).close();
