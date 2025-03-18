@@ -1,0 +1,117 @@
+openapi: 3.1.0
+info:
+  title: Metrics service
+  description: A simple application that serves metricdata
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local
+paths:
+  /metrics:
+    post:
+      description: Endpoint to save metrics data
+      parameters:
+        - $ref: '#/components/parameters/repository-id'
+      requestBody:
+        $ref: '#/components/requestBodies/metrics-request-body'
+
+      responses:
+        200:
+          description: Data was persisted successfully
+        400:
+          description: Bad request
+        500:
+          description: Internal server error
+
+    get:
+      description: Fetch metrics between two dates
+      parameters:
+        - $ref: '#/components/parameters/repository-id'
+        - $ref: '#/components/parameters/date-from'
+        - $ref: '#/components/parameters/date-to'
+      responses:
+        200:
+          description: Data was fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Metrics'
+        500:
+          description: Internal server error
+        404:
+          description: Not found
+
+components:
+  parameters:
+    repository-id:
+      name: repository-id
+      in: header
+      description: ID of the repository to be passed as a header
+      required: true
+      schema:
+        type: string
+    date-from:
+      name: fromDate
+      in: query
+      description: The query parameter containing start date of the search
+      required: true
+      schema:
+        type: string
+        description: From this date
+        example: "2017-01-01T00:00:00Z"
+        format: date-time
+    date-to:
+      name: toDate
+      in: query
+      description: The query parameter containing end date of the search
+      required: true
+      schema:
+        type: string
+        description: To this date
+        example: "2017-01-02T00:00:00Z"
+        format: date-time
+
+  requestBodies:
+    metrics-request-body:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              metrics:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/Metric'
+
+  schemas:
+    Metric:
+      description: Object that holds specific metrics data
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+
+    Metrics:
+      description: Object that holds multiple metrics data
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the metric data
+        data:
+          type: string
+          description: JSON-encoded string containing the metric data
+        timestamp:
+          type: number
+          format: float
+          description: Timestamp for when the data was collected
+        metricList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metric'
+          description: A list of additional metrics
