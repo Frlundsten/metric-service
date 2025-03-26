@@ -8,6 +8,7 @@ import static com.helidon.application.domain.model.K6Type.TREND;
 import com.helidon.application.domain.CounterValues;
 import com.helidon.application.domain.GaugeValues;
 import com.helidon.application.domain.RateValues;
+import com.helidon.application.domain.RepositoryId;
 import com.helidon.application.domain.TrendValues;
 import com.helidon.application.domain.model.K6Metric;
 import com.helidon.application.domain.model.K6Type;
@@ -56,12 +57,14 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   }
 
   private void saveMetricsData(Connection conn, Metrics metrics) throws SQLException {
-    String sql = "INSERT INTO metrics VALUES (?, ?::JSON, ?)";
+    String sql = "INSERT INTO metrics VALUES (?, ?::JSON, ?,?)";
+    var repositoryId = RepositoryId.getScopedValue().value();
 
     try (var stmt = conn.prepareStatement(sql)) {
       stmt.setString(1, metrics.id());
       stmt.setString(2, metrics.data());
       stmt.setTimestamp(3, Timestamp.from(metrics.timestamp()));
+      stmt.setString(4, repositoryId);
 
       int rows = stmt.executeUpdate();
 

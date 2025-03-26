@@ -26,6 +26,9 @@ databaseChangeLog:
                   type: TIMESTAMP
                   constraints:
                     nullable: false
+              - column:
+                  name: repository_id
+                  type: VARCHAR (50)
         - createTable:
             tableName: metric
             columns:

@@ -1,4 +1,4 @@
-package com.helidon.application;
+package com.helidon.application.domain;
 
 public record RepositoryId(String value) {
   public static final ScopedValue<RepositoryId> REPOSITORY_ID = ScopedValue.newInstance();
