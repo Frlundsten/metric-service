@@ -44,32 +44,17 @@ databaseChangeLog:
               - column:
                   name: type
                   type: VARCHAR (50)
+        #  rate
+        #  passes
+        #  fails
         - createTable:
-            tableName: metric_values
+            tableName: rate_values
             columns:
-              - column:
-                  name: id
-                  type: VARCHAR (36)
-                  constraints:
-                    primaryKey: true
-                    nullable: false
               - column:
                   name: metric_id
                   type: VARCHAR (36)
                   constraints:
                     nullable: false
-              - column:
-                  name: count
-                  type: DECIMAL
-              - column:
-                  name: value
-                  type: DECIMAL
-              - column:
-                  name: min
-                  type: DECIMAL
-              - column:
-                  name: max
-                  type: DECIMAL
               - column:
                   name: rate
                   type: DECIMAL
@@ -79,17 +64,76 @@ databaseChangeLog:
               - column:
                   name: fails
                   type: DECIMAL
+
+        #        value
+        #        min
+        #        max
+        - createTable:
+            tableName: gauge_values
+            columns:
+              - column:
+                  name: metric_id
+                  type: VARCHAR (36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: value
+                  type: DECIMAL
+              - column:
+                  name: min
+                  type: DECIMAL
+              - column:
+                  name: max
+                  type: DECIMAL
+
+        #        count
+        #        rate
+        - createTable:
+            tableName: counter_values
+            columns:
+              - column:
+                  name: metric_id
+                  type: VARCHAR (36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: count
+                  type: DECIMAL
+              - column:
+                  name: rate
+                  type: DECIMAL
+
+        #          avg
+        #          min
+        #          med
+        #          max
+        #          p(90)
+        #          p(95)
+        - createTable:
+            tableName: trend_values
+            columns:
+              - column:
+                  name: metric_id
+                  type: VARCHAR (36)
+                  constraints:
+                    nullable: false
               - column:
                   name: avg
+                  type: DECIMAL
+              - column:
+                  name: min
                   type: DECIMAL
               - column:
                   name: med
                   type: DECIMAL
               - column:
-                  name: p90
+                  name: max
                   type: DECIMAL
               - column:
-                  name: p95
+                  name: p(90)
+                  type: DECIMAL
+              - column:
+                  name: p(95)
                   type: DECIMAL
 
         - addForeignKeyConstraint:
@@ -100,8 +144,29 @@ databaseChangeLog:
             referencedColumnNames: id
 
         - addForeignKeyConstraint:
-            baseTableName: metric_values
+            baseTableName: trend_values
             baseColumnNames: metric_id
-            constraintName: fk_metric_metric_id
+            constraintName: fk_trend_metric_id
+            referencedTableName: metric
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            baseTableName: counter_values
+            baseColumnNames: metric_id
+            constraintName: fk_counter_metric_id
+            referencedTableName: metric
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            baseTableName: gauge_values
+            baseColumnNames: metric_id
+            constraintName: fk_gauge_metric_id
+            referencedTableName: metric
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            baseTableName: rate_values
+            baseColumnNames: metric_id
+            constraintName: fk_rate_metric_id
             referencedTableName: metric
             referencedColumnNames: id
