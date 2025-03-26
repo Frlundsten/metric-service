@@ -4,12 +4,13 @@ import static com.helidon.application.domain.model.K6Type.COUNTER;
 import static com.helidon.application.domain.model.K6Type.GAUGE;
 import static com.helidon.application.domain.model.K6Type.RATE;
 import static com.helidon.application.domain.model.K6Type.TREND;
-import static java.sql.Types.DECIMAL;
 
 import com.helidon.application.domain.CounterValues;
 import com.helidon.application.domain.GaugeValues;
 import com.helidon.application.domain.RateValues;
 import com.helidon.application.domain.TrendValues;
+import com.helidon.application.domain.model.K6Metric;
+import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
@@ -22,7 +23,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,12 +66,14 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       int rows = stmt.executeUpdate();
 
       if (rows != 1) {
+        LOG.error("Failed to insert metrics {}", metrics);
+        conn.rollback();
         throw new DatabaseInsertException("Expected one row update but was: " + rows);
       }
 
     } catch (SQLException e) {
       conn.rollback();
-      LOG.error("Rolling back transaction");
+      LOG.error("Rolling back transaction", e);
       throw e;
     }
   }
@@ -79,44 +81,51 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   private void saveMetrics(Connection conn, String metricsId, List<Metric> metrics)
       throws SQLException {
     String sql = "INSERT INTO metric VALUES (?, ?, ?, ?)";
-    String valuesSql = "INSERT INTO metric_values VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    String counterValueSQL = "INSERT INTO counter_values VALUES(?,?,?)";
+    String gaugeValueSQL = "INSERT INTO gauge_values VALUES(?,?,?,?)";
+    String rateValueSQL = "INSERT INTO rate_values VALUES(?,?,?,?)";
+    String trendValueSQL = "INSERT INTO trend_values VALUES(?,?,?,?,?,?,?)";
 
     try (var stmt = conn.prepareStatement(sql);
-        var stmtValues = conn.prepareStatement(valuesSql)) {
+        var stmtCounter = conn.prepareStatement(counterValueSQL);
+        var stmtGauge = conn.prepareStatement(gaugeValueSQL);
+        var stmtRate = conn.prepareStatement(rateValueSQL);
+        var stmtTrend = conn.prepareStatement(trendValueSQL)) {
 
       for (Metric metric : metrics) {
-        LOG.debug("Saving metric {}", metric);
         stmt.setString(1, metric.id());
         stmt.setString(2, metric.name());
         stmt.setString(3, metricsId);
         stmt.setString(4, metric.type().getType());
 
-        stmtValues.setString(1, UUID.randomUUID().toString());
-        stmtValues.setString(2, metric.id());
-
         switch (metric.type()) {
-          case GAUGE -> prepareGaugeValues(stmtValues, (GaugeValues) metric.values());
-          case TREND -> prepareTrendValues(stmtValues, (TrendValues) metric.values());
-          case COUNTER -> prepareCounterValues(stmtValues, (CounterValues) metric.values());
-          case RATE -> prepareRateValues(stmtValues, (RateValues) metric.values());
-          default -> throw new IllegalStateException("Unexpected value: " + metric.type());
+          case GAUGE ->
+              prepareGaugeValues(stmtGauge, (GaugeValues) metric.values(), metric.id()).addBatch();
+          case TREND ->
+              prepareTrendValues(stmtTrend, (TrendValues) metric.values(), metric.id()).addBatch();
+          case COUNTER ->
+              prepareCounterValues(stmtCounter, (CounterValues) metric.values(), metric.id())
+                  .addBatch();
+          case RATE ->
+              prepareRateValues(stmtRate, (RateValues) metric.values(), metric.id()).addBatch();
+          default -> {
+            LOG.debug("Unknown metric type {}", metric.type());
+            throw new IllegalStateException("Unexpected value: " + metric.type());
+          }
         }
-
-        LOG.debug("Saving vals {}", stmtValues);
-
-        stmtValues.addBatch();
         stmt.addBatch();
       }
 
       var responseList = stmt.executeBatch();
       LOG.debug("Metrics inserted: {}", responseList.length);
-      var values = stmtValues.executeBatch();
-      LOG.debug("Metric values inserted: {}", values.length);
-
-      if (values.length != metrics.size() || responseList.length != metrics.size()) {
-        throw new DatabaseInsertException(
-            "Batch update error. Rows affected: " + responseList.length);
-      }
+      var counterValues = stmtCounter.executeBatch();
+      LOG.debug("Counter values inserted: {}", counterValues.length);
+      var gaugeValues = stmtGauge.executeBatch();
+      LOG.debug("Gauge values inserted: {}", gaugeValues.length);
+      var rateValues = stmtRate.executeBatch();
+      LOG.debug("Rate values inserted: {}", rateValues.length);
+      var trendValues = stmtTrend.executeBatch();
+      LOG.debug("Trend values inserted: {}", trendValues.length);
 
     } catch (SQLException e) {
       conn.rollback();
@@ -130,42 +139,25 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   passes
   fails
      */
-  private void prepareRateValues(PreparedStatement stmtValues, RateValues values)
-      throws SQLException {
-    stmtValues.setNull(3, DECIMAL);
-    stmtValues.setNull(4, DECIMAL);
-    stmtValues.setNull(5, DECIMAL);
-    stmtValues.setNull(6, DECIMAL);
-
-    stmtValues.setDouble(7, values.rate());
-    stmtValues.setDouble(8, values.passes());
-    stmtValues.setDouble(9, values.fails());
-
-    stmtValues.setNull(10, DECIMAL);
-    stmtValues.setNull(11, DECIMAL);
-    stmtValues.setNull(12, DECIMAL);
-    stmtValues.setNull(13, DECIMAL);
+  private PreparedStatement prepareRateValues(
+      PreparedStatement stmtValues, RateValues values, String metric_id) throws SQLException {
+    stmtValues.setString(1, metric_id);
+    stmtValues.setDouble(2, values.rate());
+    stmtValues.setDouble(3, values.passes());
+    stmtValues.setDouble(4, values.fails());
+    return stmtValues;
   }
 
   /*
   count
   rate
      */
-  private void prepareCounterValues(PreparedStatement stmtValues, CounterValues values)
-      throws SQLException {
-    stmtValues.setNull(4, DECIMAL);
-    stmtValues.setNull(5, DECIMAL);
-    stmtValues.setNull(6, DECIMAL);
-
-    stmtValues.setDouble(3, values.count());
-    stmtValues.setDouble(7, values.rate());
-
-    stmtValues.setNull(8, DECIMAL);
-    stmtValues.setNull(9, DECIMAL);
-    stmtValues.setNull(10, DECIMAL);
-    stmtValues.setNull(11, DECIMAL);
-    stmtValues.setNull(12, DECIMAL);
-    stmtValues.setNull(13, DECIMAL);
+  private PreparedStatement prepareCounterValues(
+      PreparedStatement stmtValues, CounterValues values, String metric_id) throws SQLException {
+    stmtValues.setString(1, metric_id);
+    stmtValues.setDouble(2, values.count());
+    stmtValues.setDouble(3, values.rate());
+    return stmtValues;
   }
 
   /*
@@ -176,20 +168,17 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   p(90)
   p(95)
      */
-  private void prepareTrendValues(PreparedStatement stmtValues, TrendValues values)
-      throws SQLException {
-    stmtValues.setDouble(10, values.avg());
-    stmtValues.setDouble(5, values.min());
-    stmtValues.setDouble(11, values.med());
-    stmtValues.setDouble(6, values.max());
-    stmtValues.setDouble(12, values.p90());
-    stmtValues.setDouble(13, values.p95());
+  private PreparedStatement prepareTrendValues(
+      PreparedStatement stmtValues, TrendValues values, String metric_id) throws SQLException {
+    stmtValues.setString(1, metric_id);
+    stmtValues.setDouble(2, values.avg());
+    stmtValues.setDouble(3, values.min());
+    stmtValues.setDouble(4, values.med());
+    stmtValues.setDouble(5, values.max());
+    stmtValues.setDouble(6, values.p90());
+    stmtValues.setDouble(7, values.p95());
 
-    stmtValues.setNull(3, DECIMAL);
-    stmtValues.setNull(4, DECIMAL);
-    stmtValues.setNull(7, DECIMAL);
-    stmtValues.setNull(8, DECIMAL);
-    stmtValues.setNull(9, DECIMAL);
+    return stmtValues;
   }
 
   /*
@@ -197,20 +186,13 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   min
   max
    */
-  private void prepareGaugeValues(PreparedStatement stmtValues, GaugeValues values)
-      throws SQLException {
-    stmtValues.setDouble(4, values.value());
-    stmtValues.setDouble(5, values.min());
-    stmtValues.setDouble(6, values.max());
-
-    stmtValues.setNull(3, DECIMAL);
-    stmtValues.setNull(7, DECIMAL);
-    stmtValues.setNull(8, DECIMAL);
-    stmtValues.setNull(9, DECIMAL);
-    stmtValues.setNull(10, DECIMAL);
-    stmtValues.setNull(11, DECIMAL);
-    stmtValues.setNull(12, DECIMAL);
-    stmtValues.setNull(13, DECIMAL);
+  private PreparedStatement prepareGaugeValues(
+      PreparedStatement stmtValues, GaugeValues values, String metric_id) throws SQLException {
+    stmtValues.setString(1, metric_id);
+    stmtValues.setDouble(2, values.value());
+    stmtValues.setDouble(3, values.min());
+    stmtValues.setDouble(4, values.max());
+    return stmtValues;
   }
 
   @Override
@@ -223,7 +205,10 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
     Timestamp from = Timestamp.from(start);
     Timestamp to = Timestamp.from(end);
 
-    var sql = "SELECT * FROM metrics WHERE created_at BETWEEN ? AND ?";
+    // var sql = "SELECT * FROM metrics WHERE created_at BETWEEN ? AND ?";
+
+    var sql =
+        "SELECT metrics.*, metric.name, metric.type , metric_values.* FROM metrics INNER JOIN metric ON metric.metrics_id = metrics.id INNER JOIN metric_values ON metric_values.metric_id = metric.id WHERE created_at BETWEEN ? AND ?";
 
     try (var conn = dataSource.getConnection()) {
 
@@ -233,13 +218,17 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
         var rs = stmt.executeQuery();
         List<Metrics> metricsList = new ArrayList<>();
+
         while (rs.next()) {
-          metricsList.add(
-              new Metrics(
-                  rs.getString("id"),
-                  rs.getString("data"),
-                  rs.getTimestamp("created_at").toInstant(),
-                  List.of()));
+          var id = rs.getString("id");
+          var data = rs.getString("data");
+          var time = rs.getTimestamp("created_at").toInstant();
+          var name = rs.getString("name");
+          var type = rs.getString("type");
+
+          Metric metric = new K6Metric(name, K6Type.valueOf(type), null);
+
+          //          metricsList.add(new Metrics(List.of()));
         }
         return metricsList;
       }
