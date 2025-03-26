@@ -2,7 +2,7 @@ package com.helidon.adapter.in.rest;
 
 import com.helidon.adapter.in.rest.model.MetricsRequestDTO;
 import com.helidon.application.domain.model.Metrics;
-import com.helidon.application.domain.model.RepositoryId;
+import com.helidon.application.RepositoryId;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import io.helidon.http.HeaderNames;
 import io.helidon.webserver.http.Handler;
