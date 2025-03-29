@@ -1,6 +1,6 @@
 package com.helidon.application.domain;
 
-public enum WantedK6Metrics implements WantedMetrics {
+public enum WantedK6Metrics {
     HTTP_REQ_FAILED,
     DATA_RECEIVED,
     HTTP_REQ_BLOCKED,

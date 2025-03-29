@@ -31,13 +31,13 @@ public class GetMetricsHandler implements Handler {
 
       Map<String, Object> request = req.content().as(Map.class);
 
-      var fromBody = request.get("from");
-      var toBody = request.get("to");
-      if (fromBody != null) {
-        LOG.debug("Found from body: {}", fromBody);
+      var fromDate = request.get("from");
+      var toDate = request.get("to");
+      if (fromDate != null) {
+        LOG.debug("Found from body: {}", fromDate);
 
-        var from = Instant.parse((CharSequence) fromBody);
-        var to = Instant.parse((CharSequence) toBody);
+        var from = Instant.parse((CharSequence) fromDate);
+        var to = Instant.parse((CharSequence) toDate);
 
         var response = forManagingMetrics.getBetweenDates(from, to);
 

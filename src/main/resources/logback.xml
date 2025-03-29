@@ -11,8 +11,8 @@
     <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
-
-    <logger name="i.h.service.registry.LookupTrace " level="WARN"/>
+    <logger name="io.helidon.webserver.http1" level="WARN"/>
+    <logger name="io.helidon.service" level="WARN"/>
     <logger name="com.zaxxer.hikari" level="WARN"/>
     <logger name="javax.management.remote.rmi" level="WARN"/>
 </configuration>

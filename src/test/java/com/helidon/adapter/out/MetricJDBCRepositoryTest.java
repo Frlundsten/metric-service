@@ -51,7 +51,7 @@ class MetricJDBCRepositoryTest {
 
     assertThatNoException().isThrownBy(() -> withScope(() -> repository.saveMetrics(metrics)));
     verify(connection, times(1)).close();
-    verify(preparedStatement, times(3)).close();
+    verify(preparedStatement, times(6)).close();
   }
 
   @ParameterizedTest
