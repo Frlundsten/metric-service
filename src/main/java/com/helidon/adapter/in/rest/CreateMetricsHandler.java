@@ -1,8 +1,8 @@
 package com.helidon.adapter.in.rest;
 
-import com.helidon.adapter.in.rest.model.MetricsRequestDTO;
-import com.helidon.application.domain.model.Metrics;
+import com.helidon.adapter.in.rest.dto.MetricsRequestDTO;
 import com.helidon.application.domain.RepositoryId;
+import com.helidon.application.domain.model.K6Metrics;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import io.helidon.http.HeaderNames;
 import io.helidon.webserver.http.Handler;
@@ -10,8 +10,6 @@ import io.helidon.webserver.http.ServerRequest;
 import io.helidon.webserver.http.ServerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.ScopedValue;
 
 public class CreateMetricsHandler implements Handler {
   public static Logger LOG = LoggerFactory.getLogger(CreateMetricsHandler.class);
@@ -39,7 +37,8 @@ public class CreateMetricsHandler implements Handler {
   }
 
   private MetricsRequestDTO handleRequest(MetricsRequestDTO dto) {
-    Metrics metrics = mapper.fromDTO(dto.metrics());
+    K6Metrics metrics = mapper.fromDtoMap(dto.metrics());
+    LOG.debug("Metrics object created: {}", metrics);
     metricsCreation.saveMetrics(metrics);
     return dto;
   }

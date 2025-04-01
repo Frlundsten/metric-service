@@ -10,9 +10,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.helidon.application.domain.CounterValues;
+import com.helidon.application.domain.model.K6Metric;
+import com.helidon.application.domain.model.K6Metrics;
 import com.helidon.application.domain.model.K6Type;
-import com.helidon.application.domain.model.Metric;
-import com.helidon.application.domain.model.Metrics;
 import com.helidon.exception.DatabaseInsertException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,18 +38,18 @@ class MetricJDBCRepositoryTest {
 
   @Test
   void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
-    Metric metric = mock(Metric.class);
+    K6Metric metric = mock(K6Metric.class);
     when(metric.type()).thenReturn(K6Type.COUNTER);
     CounterValues val = new CounterValues(2.0, 2.0);
     when(metric.values()).thenReturn(val);
-    Metrics metrics = new Metrics("{}", List.of(metric));
+    K6Metrics k6Metrics = new K6Metrics("{}", List.of(metric));
 
     when(dataSource.getConnection()).thenReturn(connection);
     when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
     when(preparedStatement.executeUpdate()).thenReturn(1);
     when(preparedStatement.executeBatch()).thenReturn(new int[] {1});
 
-    assertThatNoException().isThrownBy(() -> withScope(() -> repository.saveMetrics(metrics)));
+    assertThatNoException().isThrownBy(() -> withScope(() -> repository.saveMetrics(k6Metrics)));
     verify(connection, times(1)).close();
     verify(preparedStatement, times(6)).close();
   }
@@ -57,14 +57,14 @@ class MetricJDBCRepositoryTest {
   @ParameterizedTest
   @ValueSource(ints = {0, 2})
   void shouldThrowWhenUpdatedRowsIsNotOne(int rows) throws SQLException {
-    Metrics metrics = new Metrics("{}", List.of());
+    K6Metrics k6Metrics = new K6Metrics("{}", List.of());
 
     when(dataSource.getConnection()).thenReturn(connection);
     when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
     when(preparedStatement.executeUpdate()).thenReturn(rows);
 
     assertThatException()
-        .isThrownBy(() -> withScope(() -> repository.saveMetrics(metrics)))
+        .isThrownBy(() -> withScope(() -> repository.saveMetrics(k6Metrics)))
         .isInstanceOf(DatabaseInsertException.class)
         .withMessage("Expected one row update but was: " + rows);
     verify(connection, times(1)).close();

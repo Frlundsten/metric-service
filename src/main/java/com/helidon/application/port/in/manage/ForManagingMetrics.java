@@ -1,6 +1,6 @@
 package com.helidon.application.port.in.manage;
 
-import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.K6Metrics;
 import java.time.Instant;
 import java.util.List;
 
@@ -12,7 +12,7 @@ public interface ForManagingMetrics {
    * @param id
    * @return Metrics object with provided id
    */
-  Metrics getMetrics(String id);
+  K6Metrics getMetrics(String id);
 
   /**
    * Get metrics objects from a timespan.
@@ -21,5 +21,5 @@ public interface ForManagingMetrics {
    * @param end Exclusive
    * @return List of Metrics objects
    */
-  List<Metrics> getBetweenDates(Instant start, Instant end);
+  List<K6Metrics> getBetweenDates(Instant start, Instant end);
 }

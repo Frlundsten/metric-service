@@ -1,6 +1,6 @@
 package com.helidon.application.domain.service;
 
-import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.K6Metrics;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import com.helidon.application.port.in.manage.ForManagingMetrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
@@ -20,17 +20,17 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
   }
 
   @Override
-  public void saveMetrics(Metrics metrics) {
-    persistingMetrics.saveMetrics(metrics);
+  public void saveMetrics(K6Metrics k6Metrics) {
+    persistingMetrics.saveMetrics(k6Metrics);
   }
 
   @Override
-  public Metrics getMetrics(String id) {
+  public K6Metrics getMetrics(String id) {
     return manageStoredMetrics.get(id);
   }
 
   @Override
-  public List<Metrics> getBetweenDates(Instant from, Instant to) {
+  public List<K6Metrics> getBetweenDates(Instant from, Instant to) {
     return manageStoredMetrics.getBetweenDates(from, to);
   }
 }
