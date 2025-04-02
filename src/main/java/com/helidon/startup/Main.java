@@ -7,7 +7,6 @@ import com.helidon.adapter.in.rest.Mapper;
 import com.helidon.adapter.out.MetricJDBCRepository;
 import com.helidon.application.domain.service.MetricService;
 import javax.sql.DataSource;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class Main {
   public static void main(String[] args) {

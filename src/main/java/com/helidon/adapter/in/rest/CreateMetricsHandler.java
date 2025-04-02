@@ -1,7 +1,6 @@
 package com.helidon.adapter.in.rest;
 
 import com.helidon.adapter.in.rest.model.MetricsRequestDTO;
-import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.domain.RepositoryId;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import io.helidon.http.HeaderNames;
@@ -39,8 +38,7 @@ public class CreateMetricsHandler implements Handler {
   }
 
   private MetricsRequestDTO handleRequest(MetricsRequestDTO dto) {
-    Metrics metrics = mapper.fromDTO(dto.metrics());
-    metricsCreation.saveMetrics(metrics);
+    metricsCreation.saveMetrics(mapper.fromDTO(dto.metrics()));
     return dto;
   }
 }
