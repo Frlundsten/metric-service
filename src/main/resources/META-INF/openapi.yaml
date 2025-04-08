@@ -83,17 +83,32 @@ components:
               metrics:
                 type: object
                 additionalProperties:
-                  $ref: '#/components/schemas/Metric'
+                  $ref: '#/components/schemas/MetricRequestObject'
 
   schemas:
-    Metric:
+    MetricRequestObject:
       description: Object that holds specific metrics data
       type: object
       properties:
-        name:
-          type: string
+        values:
+          type: object
+          additionalProperties:
+            type: number
         type:
           type: string
+        contains:
+          type: string
+      example:
+        http_req_request:
+          values:
+            min: 0
+            med: 0
+            max: 0
+            "p(90)": 0
+            "p(95)": 0
+            avg: 0
+          type: "trend"
+          contains: "time"
 
     Metrics:
       description: Object that holds multiple metrics data
@@ -113,5 +128,5 @@ components:
         metricList:
           type: array
           items:
-            $ref: '#/components/schemas/Metric'
+            $ref: '#/components/schemas/MetricRequestObject'
           description: A list of additional metrics

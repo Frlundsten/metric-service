@@ -38,7 +38,9 @@ public class CreateMetricsHandler implements Handler {
   }
 
   private MetricsRequestDTO handleRequest(MetricsRequestDTO dto) {
-    metricsCreation.saveMetrics(mapper.fromDTO(dto.metrics()));
+    K6Metrics metrics = mapper.fromDtoMap(dto.metrics());
+    LOG.debug("Metrics object created: {}", metrics);
+    metricsCreation.saveMetrics(metrics);
     return dto;
   }
 }

@@ -4,21 +4,26 @@ import static com.helidon.application.domain.model.K6Type.COUNTER;
 import static com.helidon.application.domain.model.K6Type.GAUGE;
 import static com.helidon.application.domain.model.K6Type.RATE;
 import static com.helidon.application.domain.model.K6Type.TREND;
+import static java.sql.Types.DECIMAL;
 
+import com.helidon.adapter.in.rest.dto.CounterValuesDTO;
+import com.helidon.adapter.in.rest.dto.GaugeValuesDTO;
+import com.helidon.adapter.in.rest.dto.RateValuesDTO;
+import com.helidon.adapter.in.rest.dto.TrendValuesDTO;
 import com.helidon.application.domain.CounterValues;
 import com.helidon.application.domain.GaugeValues;
 import com.helidon.application.domain.RateValues;
 import com.helidon.application.domain.RepositoryId;
 import com.helidon.application.domain.TrendValues;
-import com.helidon.application.domain.model.K6Metric;
-import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
 import com.helidon.exception.DatabaseInsertException;
+import com.helidon.exception.UnknownMetricTypeException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -37,14 +42,14 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   }
 
   @Override
-  public void saveMetrics(Metrics metrics) {
-    LOG.debug("Saving metrics {}", metrics);
+  public void saveMetrics(K6Metrics k6Metrics) {
+    LOG.debug("Saving metrics {}", k6Metrics);
 
     try (var conn = dataSource.getConnection()) {
       conn.setAutoCommit(false);
 
-      saveMetricsData(conn, metrics);
-      saveMetrics(conn, metrics.id(), metrics.metricList());
+      saveMetricsData(conn, k6Metrics);
+      saveMetrics(conn, k6Metrics.id(), k6Metrics.metricList());
 
       conn.commit();
     } catch (DatabaseInsertException e) {
@@ -81,7 +86,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
     }
   }
 
-  private void saveMetrics(Connection conn, String metricsId, List<Metric> metrics)
+  private void saveMetrics(Connection conn, String metricsId, List<K6Metric> metrics)
       throws SQLException {
     String sql = "INSERT INTO metric VALUES (?, ?, ?, ?)";
     String counterValueSQL = "INSERT INTO counter_values VALUES(?,?,?)";
@@ -232,11 +237,66 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
           Metric metric = new K6Metric(name, K6Type.valueOf(type), null);
 
           //          metricsList.add(new Metrics(List.of()));
+          var id = rs.getString("id");
+          var time = rs.getTimestamp("created_at").toInstant();
+          var repositoryId = rs.getString("repository_id");
+          var name = rs.getString("metric_name");
+          var type = rs.getString("metric_type");
+
+          var value =
+              switch (type) {
+                case "rate" -> createRateValues(rs);
+                case "counter" -> createCounterValues(rs);
+                case "trend" -> createTrendValues(rs);
+                case "gauge" -> createGaugeValues(rs);
+                default -> throw new IllegalStateException("Unexpected type: " + type);
+              };
+
+          //          switch (type) {
+          //            case "gauge": k6MetricsList.add()
+          //          }
+
+          K6Metric metric = new K6Metric(id, name, K6Type.valueOf(type), value);
+
+          K6Metrics metrics = new K6Metrics(id);
+
+          //          k6MetricsList.add(new K6Metrics(List.of()));
         }
-        return metricsList;
+        return k6MetricsList;
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
+
+  private GaugeValuesDTO createGaugeValues(ResultSet rs) throws SQLException {
+    var value = rs.getDouble("values");
+    var min = rs.getDouble("min");
+    var max = rs.getDouble("max");
+    return new GaugeValuesDTO(value, min, max);
+  }
+
+  private TrendValuesDTO createTrendValues(ResultSet rs) throws SQLException {
+    var avg = rs.getDouble("avg");
+    var min = rs.getDouble("min");
+    var med = rs.getDouble("med");
+    var max = rs.getDouble("max");
+    var p90 = rs.getDouble("p90");
+    var p95 = rs.getDouble("p95");
+    return new TrendValuesDTO(avg, min, med, max, p90, p95);
+  }
+
+  private CounterValuesDTO createCounterValues(ResultSet rs) throws SQLException {
+    var count = rs.getDouble("count");
+    var rate = rs.getDouble("rate");
+    return new CounterValuesDTO(count, rate);
+  }
+
+  private RateValuesDTO createRateValues(ResultSet rs) throws SQLException {
+    var rate = rs.getDouble("rate");
+    var passes = rs.getDouble("passes");
+    var fails = rs.getDouble("fails");
+    return new RateValuesDTO(rate, passes, fails);
+  }
+  ;
 }

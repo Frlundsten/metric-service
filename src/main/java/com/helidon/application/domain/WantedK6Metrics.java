@@ -1,5 +1,7 @@
 package com.helidon.application.domain;
 
+import java.util.function.Predicate;
+
 public enum WantedK6Metrics {
     HTTP_REQ_FAILED,
     DATA_RECEIVED,
@@ -15,5 +17,16 @@ public enum WantedK6Metrics {
     HTTP_REQ_WAITING,
     HTTP_REQ_CONNECTING,
     VUS,
-    HTTP_REQS
+    HTTP_REQS;
+
+    public static Predicate<String> isValid() {
+        return value -> {
+            try {
+                WantedK6Metrics.valueOf(value);
+                return true;
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
+        };
+    }
 }
