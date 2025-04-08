@@ -1,5 +1,6 @@
 package com.helidon.adapter.in.rest.dto;
 
+import com.helidon.application.domain.CounterMetric;
 import com.helidon.application.domain.CounterValues;
 
 public record CounterValuesDTO(double count, double rate) implements ValuesDTO {
@@ -8,7 +9,7 @@ public record CounterValuesDTO(double count, double rate) implements ValuesDTO {
   }
 
   @Override
-  public ValuesDTO getValues() {
-    return this;
+  public CounterMetric.CounterValues toDomain() {
+    return new CounterMetric.CounterValues(count(), rate());
   }
 }

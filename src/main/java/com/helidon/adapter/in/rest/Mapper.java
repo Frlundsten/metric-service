@@ -2,11 +2,7 @@ package com.helidon.adapter.in.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.helidon.adapter.in.rest.dto.CounterValuesDTO;
-import com.helidon.adapter.in.rest.dto.GaugeValuesDTO;
 import com.helidon.adapter.in.rest.dto.MetricDTO;
-import com.helidon.adapter.in.rest.dto.RateValuesDTO;
-import com.helidon.adapter.in.rest.dto.TrendValuesDTO;
 import com.helidon.application.domain.WantedK6Metrics;
 import com.helidon.application.domain.model.K6Metric;
 import com.helidon.application.domain.model.K6Metrics;
@@ -34,7 +30,7 @@ public class Mapper {
 
   protected Function<Map.Entry<String, MetricDTO>, K6Metric> createValidMetric =
       entry -> {
-        if (WantedK6Metrics.isValid().test(entry.getKey())) {
+        if (WantedK6Metrics.isValid().test(entry.getKey().toUpperCase())) {
           return createMetric(entry.getKey(), entry.getValue());
         } else {
           return null;
@@ -42,14 +38,14 @@ public class Mapper {
       };
 
   private K6Metric createMetric(String name, MetricDTO data) {
-    var values =
-        switch (data.type()) {
-          case "rate" -> RateValuesDTO.toValues((RateValuesDTO) data.values());
-          case "counter" -> CounterValuesDTO.toValues((CounterValuesDTO) data.values());
-          case "trend" -> TrendValuesDTO.toValues((TrendValuesDTO) data.values());
-          case "gauge" -> GaugeValuesDTO.toValues((GaugeValuesDTO) data.values());
-          default -> throw new IllegalStateException("Unexpected type: " + data.type());
-        };
-    return K6Metric.from(name, data.type(), values);
+    //    var values =
+    //        switch (data.type()) {
+    //          case "rate" -> RateValuesDTO.toValues((RateValuesDTO) data.values());
+    //          case "counter" -> CounterValuesDTO.toValues((CounterValuesDTO) data.values());
+    //          case "trend" -> TrendValuesDTO.toValues((TrendValuesDTO) data.values());
+    //          case "gauge" -> GaugeValuesDTO.toValues((GaugeValuesDTO) data.values());
+    //          default -> throw new IllegalStateException("Unexpected type: " + data.type());
+    //        };
+    return K6Metric.from(name, data.type(), data.values().toDomain());
   }
 }

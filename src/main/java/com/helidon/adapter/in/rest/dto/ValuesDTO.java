@@ -4,4 +4,8 @@ package com.helidon.adapter.in.rest.dto;
 Marker interface
  */
 
-public interface ValuesDTO {}
+import com.helidon.application.domain.model.Values;
+
+public interface ValuesDTO {
+    Values toDomain();
+}
