@@ -1,24 +1,11 @@
 package com.helidon.adapter.out;
 
-import static com.helidon.ProvideScope.withScope;
-import static org.assertj.core.api.Assertions.assertThatException;
-import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.helidon.application.domain.CounterValues;
-import com.helidon.application.domain.model.K6Metric;
-import com.helidon.application.domain.model.K6Metrics;
-import com.helidon.application.domain.model.K6Type;
+import com.helidon.adapter.out.entity.MetricEntity;
+import com.helidon.adapter.out.entity.MetricsEntity;
+import com.helidon.application.domain.model.Metric;
+import com.helidon.application.domain.model.Metrics;
 import com.helidon.exception.DatabaseInsertException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.List;
-import javax.sql.DataSource;
+import com.helidon.util.Mapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,47 +14,69 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.List;
+
+import static com.helidon.ProvideScope.withScope;
+import static org.assertj.core.api.Assertions.assertThatException;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class MetricJDBCRepositoryTest {
 
-  @Mock DataSource dataSource;
-  @Mock Connection connection;
-  @Mock PreparedStatement preparedStatement;
+    @Mock
+    DataSource dataSource;
+    @Mock
+    Connection connection;
+    @Mock
+    PreparedStatement preparedStatement;
+    @Mock
+    Mapper mapper;
+    @InjectMocks
+    MetricJDBCRepository repository;
 
-  @InjectMocks MetricJDBCRepository repository;
+    @Test
+    void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
+        lenient().when(mapper.toEntity(any())).thenReturn(new MetricsEntity("{\"key\":\"val\"}", Instant.now(), List.of(new MetricEntity("http", "rate", "{\"avg\":5.0}"))));
+        Metric metric = mock(Metric.class);
+        Metrics k6Metrics = new Metrics("{}", List.of(metric));
 
-  @Test
-  void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
-    K6Metric metric = mock(K6Metric.class);
-    when(metric.type()).thenReturn(K6Type.COUNTER);
-    CounterValues val = new CounterValues(2.0, 2.0);
-    when(metric.values()).thenReturn(val);
-    K6Metrics k6Metrics = new K6Metrics("{}", List.of(metric));
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+        when(preparedStatement.executeUpdate()).thenReturn(1);
+        when(preparedStatement.executeBatch()).thenReturn(new int[]{1});
 
-    when(dataSource.getConnection()).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-    when(preparedStatement.executeUpdate()).thenReturn(1);
-    when(preparedStatement.executeBatch()).thenReturn(new int[] {1});
+        assertThatNoException().isThrownBy(() -> withScope(() -> repository.saveMetrics(k6Metrics)));
+        verify(connection, times(1)).close();
+        verify(preparedStatement, times(2)).close();
+    }
 
-    assertThatNoException().isThrownBy(() -> withScope(() -> repository.saveMetrics(k6Metrics)));
-    verify(connection, times(1)).close();
-    verify(preparedStatement, times(6)).close();
-  }
+    @ParameterizedTest
+    @ValueSource(ints = {0, 2})
+    void shouldThrowWhenUpdatedRowsIsNotOne(int rows) throws SQLException {
+        lenient().when(mapper.toEntity(any())).thenReturn(new MetricsEntity("{\"key\":\"val\"}", Instant.now(), List.of(new MetricEntity("http", "rate", "{\"avg\":5.0}"))));
+        Metrics k6Metrics = new Metrics("{}", List.of());
 
-  @ParameterizedTest
-  @ValueSource(ints = {0, 2})
-  void shouldThrowWhenUpdatedRowsIsNotOne(int rows) throws SQLException {
-    K6Metrics k6Metrics = new K6Metrics("{}", List.of());
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+        when(preparedStatement.executeUpdate()).thenReturn(rows);
 
-    when(dataSource.getConnection()).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-    when(preparedStatement.executeUpdate()).thenReturn(rows);
-
-    assertThatException()
-        .isThrownBy(() -> withScope(() -> repository.saveMetrics(k6Metrics)))
-        .isInstanceOf(DatabaseInsertException.class)
-        .withMessage("Expected one row update but was: " + rows);
-    verify(connection, times(1)).close();
-    verify(preparedStatement, times(1)).close();
-  }
+        assertThatException()
+                .isThrownBy(() -> withScope(() -> repository.saveMetrics(k6Metrics)))
+                .isInstanceOf(DatabaseInsertException.class)
+                .withMessage("Expected one row update but was: " + rows);
+        verify(connection, times(1)).close();
+        verify(preparedStatement, times(1)).close();
+    }
 }

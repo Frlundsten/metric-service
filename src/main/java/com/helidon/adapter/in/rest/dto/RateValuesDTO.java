@@ -1,15 +1,10 @@
 package com.helidon.adapter.in.rest.dto;
 
-import com.helidon.application.domain.RateMetric;
-import com.helidon.application.domain.RateValues;
+import com.helidon.application.domain.model.RateValues;
 
 public record RateValuesDTO(double rate, double passes, double fails) implements ValuesDTO {
-  public static RateValues toValues(RateValuesDTO values) {
-    return new RateValues(values.rate(), values.passes(), values.fails());
-  }
-
-  @Override
-  public RateMetric.RateValues toDomain() {
-    return new RateMetric.RateValues(rate(), passes(), fails());
-  }
+    @Override
+    public RateValues toDomain() {
+        return new RateValues(rate(), passes(), fails());
+    }
 }

@@ -1,12 +1,15 @@
 package com.helidon.adapter.in.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+
+import com.helidon.util.Mapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class MapperTest {
   ObjectMapper jacksonMapper;
@@ -22,7 +25,7 @@ class MapperTest {
   void toWantedK6Metrics() throws JsonProcessingException {
     var mapOfMetrics = jacksonMapper.readValue(request, Map.class);
 
-    var e  = mapper.fromDtoMap(mapOfMetrics);
+    var e  = mapper.toDomain(mapOfMetrics);
   }
 
   String request =

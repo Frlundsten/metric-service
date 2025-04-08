@@ -5,5 +5,4 @@ package com.helidon.application.domain.model;
  * <b>Example of types:</b>  Gauge, Counter, Time, Rate.
  */
 public interface Type {
-    String getType();
 }

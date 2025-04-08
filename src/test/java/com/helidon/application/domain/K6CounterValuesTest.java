@@ -2,6 +2,7 @@ package com.helidon.application.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.helidon.application.domain.model.CounterValues;
 import org.junit.jupiter.api.Test;
 
 class K6CounterValuesTest {

@@ -1,7 +1,7 @@
 package com.helidon.application.port.in.create;
 
-import com.helidon.application.domain.model.K6Metrics;
+import com.helidon.application.domain.model.Metrics;
 
 public interface ForCreateMetrics {
-    void saveMetrics(K6Metrics k6Metrics);
+    void saveMetrics(Metrics k6Metrics);
 }

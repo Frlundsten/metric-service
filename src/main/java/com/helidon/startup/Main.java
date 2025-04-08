@@ -3,7 +3,7 @@ package com.helidon.startup;
 import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
 import com.helidon.adapter.in.rest.GetMetricsHandler;
-import com.helidon.adapter.in.rest.Mapper;
+import com.helidon.util.Mapper;
 import com.helidon.adapter.out.MetricJDBCRepository;
 import com.helidon.application.domain.service.MetricService;
 import javax.sql.DataSource;
@@ -15,7 +15,7 @@ public class Main {
         DataSourceInstance.getDataSource(
             "jdbc:postgresql://localhost:5432/helidon", "user", "password");
 
-    MetricJDBCRepository repository = new MetricJDBCRepository(dataSource);
+    MetricJDBCRepository repository = new MetricJDBCRepository(dataSource,mapper);
     MetricService metricService = new MetricService(repository, repository);
     CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricService, mapper);
     GetMetricsHandler getMetricsHandler = new GetMetricsHandler(metricService, mapper);
