@@ -38,6 +38,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Metrics'
+
         500:
           description: Internal server error
         404:
@@ -46,30 +47,34 @@ paths:
 components:
   parameters:
     repository-id:
-      name: repository-id
+      name: Repository-Id
       in: header
-      description: ID of the repository to be passed as a header
+      description: ID of the repository
       required: true
       schema:
         type: string
     date-from:
-      name: fromDate
+      name: from
       in: query
-      description: The query parameter containing start date of the search
+      description: |
+        The query parameter containing the start date of the search.
+        Note: The colon (':') in the date-time value needs to be URL encoded as '%3A'.
       required: true
       schema:
         type: string
-        description: From this date
+        description: The start date to look from (e.g., "2017-01-01T00:00:00Z").
         example: "2017-01-01T00:00:00Z"
         format: date-time
     date-to:
-      name: toDate
+      name: to
       in: query
-      description: The query parameter containing end date of the search
+      description: |
+        The query parameter containing the end date of the search.
+        Note: The colon (':') in the date-time value needs to be URL encoded as '%3A'.
       required: true
       schema:
         type: string
-        description: To this date
+        description: The end date to look until (e.g., "2017-01-02T00:00:00Z").
         example: "2017-01-02T00:00:00Z"
         format: date-time
 
@@ -81,9 +86,7 @@ components:
             type: object
             properties:
               metrics:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/MetricRequestObject'
+                $ref: '#/components/schemas/MetricRequestObject'
 
   schemas:
     MetricRequestObject:
