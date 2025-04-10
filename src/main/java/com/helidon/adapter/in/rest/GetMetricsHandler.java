@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GetMetricsHandler implements Handler {
-  public static Logger LOG = LoggerFactory.getLogger(GetMetricsHandler.class);
+  public static final Logger LOG = LoggerFactory.getLogger(GetMetricsHandler.class);
   private final ForManagingMetrics forManagingMetrics;
 
   public GetMetricsHandler(ForManagingMetrics forManagingMetrics) {
@@ -32,7 +32,6 @@ public class GetMetricsHandler implements Handler {
               try {
                 var fromDate = req.query().get("from");
                 var toDate = req.query().get("to");
-                LOG.debug("Processing a GET request..WRFGFAWEFFSFS");
                 var response = handleRequest(fromDate, toDate);
                 res.status(200).send(response);
               } catch (NoSuchElementException e) {
