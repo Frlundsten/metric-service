@@ -1,4 +1,4 @@
-package com.helidon.adapter.in.rest;
+package com.helidon.application;
 
 public record RepositoryId(String value) {
   public static final ScopedValue<RepositoryId> REPOSITORY_ID = ScopedValue.newInstance();
