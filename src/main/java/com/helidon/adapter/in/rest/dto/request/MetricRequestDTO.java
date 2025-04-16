@@ -1,9 +1,14 @@
-package com.helidon.adapter.in.rest.dto;
+package com.helidon.adapter.in.rest.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.helidon.adapter.in.rest.dto.CounterValuesDTO;
+import com.helidon.adapter.in.rest.dto.GaugeValuesDTO;
+import com.helidon.adapter.in.rest.dto.RateValuesDTO;
+import com.helidon.adapter.in.rest.dto.TrendValuesDTO;
+import com.helidon.adapter.in.rest.dto.ValuesDTO;
 
-public record MetricDTO(
+public record MetricRequestDTO(
     String type,
     String contains,
     @JsonTypeInfo(
@@ -16,4 +21,4 @@ public record MetricDTO(
           @JsonSubTypes.Type(value = TrendValuesDTO.class, name = "trend"),
           @JsonSubTypes.Type(value = GaugeValuesDTO.class, name = "gauge")
         })
-        ValuesDTO values) {}
+    ValuesDTO values) {}

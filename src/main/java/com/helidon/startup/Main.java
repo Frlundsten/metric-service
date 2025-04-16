@@ -15,7 +15,7 @@ public class Main {
         DataSourceInstance.getDataSource(
             "jdbc:postgresql://localhost:5432/helidon", "user", "password");
 
-    MetricJDBCRepository repository = new MetricJDBCRepository(dataSource, mapper);
+    MetricJDBCRepository repository = new MetricJDBCRepository(dataSource);
     MetricService metricService = new MetricService(repository, repository);
     CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricService, mapper);
     GetMetricsHandler getMetricsHandler = new GetMetricsHandler(metricService);

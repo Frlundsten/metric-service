@@ -6,6 +6,7 @@ import io.helidon.webserver.http.HttpRouting;
 import io.helidon.webserver.http.HttpService;
 
 public class HelidonWebserver {
+  private HelidonWebserver() {}
 
   public static void setup(HttpService service) {
 

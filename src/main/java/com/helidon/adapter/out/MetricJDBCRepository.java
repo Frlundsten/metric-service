@@ -1,14 +1,15 @@
 package com.helidon.adapter.out;
 
+import static com.helidon.adapter.out.entity.MetricsEntity.*;
+
+import com.helidon.adapter.RepositoryId;
 import com.helidon.adapter.out.entity.MetricEntity;
 import com.helidon.adapter.out.entity.MetricsEntity;
-import com.helidon.application.RepositoryId;
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
 import com.helidon.exception.DatabaseInsertException;
 import com.helidon.exception.EmptyMetricListException;
-import com.helidon.util.Mapper;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -23,18 +24,16 @@ import org.slf4j.LoggerFactory;
 public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingStoredMetrics {
   public static final Logger LOG = LoggerFactory.getLogger(MetricJDBCRepository.class);
   private final DataSource dataSource;
-  private final Mapper mapper;
 
-  public MetricJDBCRepository(DataSource dataSource, Mapper mapper) {
+  public MetricJDBCRepository(DataSource dataSource) {
     this.dataSource = dataSource;
-    this.mapper = mapper;
   }
 
   @Override
   public void saveMetrics(Metrics metrics) {
     LOG.debug("Saving metrics {}", metrics);
 
-    var metricsEntity = mapper.toEntity(metrics);
+    var metricsEntity = fromDomain(metrics);
 
     try (var conn = dataSource.getConnection()) {
       conn.setAutoCommit(false);
@@ -42,10 +41,8 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       saveMetrics(conn, metricsEntity.id(), metricsEntity.metricList());
       conn.commit();
       LOG.debug("Metrics saved to database");
-    } catch (DatabaseInsertException e) {
-      LOG.error(e.getMessage());
     } catch (SQLException e) {
-      throw new DatabaseInsertException("Error when inserting", e);
+      throw new DatabaseInsertException("Error when persisting metrics", e);
     }
   }
 
@@ -64,7 +61,6 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
       if (rows != 1) {
         LOG.error("Failed to insert metrics {}", metricsToPersist);
-        conn.rollback();
         throw new DatabaseInsertException("Expected one row update but was: " + rows);
       }
 
@@ -74,6 +70,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
     } catch (DatabaseInsertException e) {
       conn.rollback();
       LOG.error("Unable to insert metrics {}", metricsToPersist);
+      throw e;
     }
   }
 
@@ -90,7 +87,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
     String sql = "INSERT INTO metric VALUES (?, ?, ?, ?, ?::jsonb)";
 
     try (var stmt = conn.prepareStatement(sql)) {
-      stmt.setString(3, metricsId);
+      stmt.setString(3, metricsId); // Set outside loop since it's the same value for every metric
       for (MetricEntity metric : metrics) {
         stmt.setString(1, metric.id());
         stmt.setString(2, metric.name());
@@ -152,7 +149,10 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
             if (!metricList.isEmpty()) {
               metricsList.add(
                   new MetricsEntity(
-                      current.get(), "{}", createdAt.toInstant(), new ArrayList<>(metricList)));
+                      current.orElse(""),
+                      "{}",
+                      createdAt.toInstant(),
+                      new ArrayList<>(metricList)));
               metricList.clear();
             }
             current = Optional.of(metricsId);
@@ -167,7 +167,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
                         entity.id(),
                         entity.data(),
                         entity.timestamp(),
-                        entity.metricList().stream().map(mapper::toDomain).toList()))
+                        entity.metricList().stream().map(MetricEntity::toDomain).toList()))
             .toList();
       }
     } catch (SQLException e) {

@@ -1,4 +1,4 @@
-package com.helidon.adapter.in.rest.dto;
+package com.helidon.adapter.in.rest.dto.response;
 
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.Values;

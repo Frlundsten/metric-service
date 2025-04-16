@@ -1,4 +1,4 @@
-package com.helidon.adapter.in.rest.dto;
+package com.helidon.adapter.in.rest.dto.response;
 
 import com.helidon.application.domain.model.Metrics;
 import java.time.Instant;

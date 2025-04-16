@@ -11,6 +11,14 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <version.postgres>42.7.5</version.postgres>
+        <version.slf4j>2.0.16</version.slf4j>
+        <version.logback.classic>1.5.16</version.logback.classic>
+        <version.smallrye>4.0.8</version.smallrye>
+        <version.junit>5.11.1</version.junit>
+        <version.assertj>3.27.3</version.assertj>
+        <version.mockito.core>5.17.0</version.mockito.core>
     </properties>
 
     <dependencyManagement>
@@ -41,7 +49,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.5</version>
+            <version>${version.postgres}</version>
         </dependency>
         <dependency>
             <groupId>io.helidon.http.media</groupId>
@@ -54,7 +62,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.16</version>
+            <version>${version.slf4j}</version>
         </dependency>
         <dependency>
             <groupId>io.helidon.logging</groupId>
@@ -63,12 +71,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
-            <version>2.0.16</version>
+            <version>${version.slf4j}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.16</version>
+            <version>${version.logback.classic}</version>
         </dependency>
         <dependency>
             <groupId>io.helidon.openapi</groupId>
@@ -81,30 +89,30 @@
         <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-open-api-ui</artifactId>
-            <version>4.0.8</version>
+            <version>${version.smallrye}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.11.1</version>
+            <version>${version.junit}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.11.1</version>
+            <version>${version.junit}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.27.3</version>
+            <version>${version.assertj}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.14.1</version>
+            <artifactId>mockito-core</artifactId>
+            <version>${version.mockito.core}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -115,9 +123,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <source>23</source>
-                    <target>23</target>
-                    <release>23</release>
+                    <source>21</source>
+                    <target>21</target>
+                    <release>21</release>
                     <compilerArgs>
                         <arg>--enable-preview</arg>
                     </compilerArgs>
@@ -126,9 +134,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.3</version>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${version.mockito.core}/mockito-core-${version.mockito.core}.jar
+                        --enable-preview
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>

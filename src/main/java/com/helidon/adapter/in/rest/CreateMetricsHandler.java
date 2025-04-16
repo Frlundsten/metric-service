@@ -1,7 +1,7 @@
 package com.helidon.adapter.in.rest;
 
-import com.helidon.adapter.in.rest.dto.MetricsRequestDTO;
-import com.helidon.application.RepositoryId;
+import com.helidon.adapter.in.rest.dto.request.MetricsRequestDTO;
+import com.helidon.adapter.RepositoryId;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import com.helidon.util.Mapper;
 import io.helidon.http.HeaderNames;
@@ -27,7 +27,7 @@ public class CreateMetricsHandler implements Handler {
     var repoIdValue = req.headers().get(HeaderNames.create("Repository-Id"));
     RepositoryId repositoryId = new RepositoryId(repoIdValue.values());
     var dto = req.content().as(MetricsRequestDTO.class);
-    ScopedValue.where(RepositoryId.REPOSITORY_ID, repositoryId)
+      ScopedValue.where(RepositoryId.REPOSITORY_ID, repositoryId)
         .run(
             () -> {
               var response = handleRequest(dto);

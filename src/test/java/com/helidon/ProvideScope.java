@@ -1,6 +1,6 @@
 package com.helidon;
 
-import com.helidon.application.RepositoryId;
+import com.helidon.adapter.RepositoryId;
 
 // Provide scoped value for tests
 public class ProvideScope {
