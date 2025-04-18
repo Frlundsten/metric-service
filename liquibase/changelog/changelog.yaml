@@ -60,3 +60,54 @@ databaseChangeLog:
             referencedTableName: metrics
             referencedColumnNames: id
 
+        - createIndex:
+            indexName: idx_metric_name
+            tableName: metric
+            columns:
+              - column:
+                  name: name
+
+        - createIndex:
+            indexName: idx_metric_metrics_id
+            tableName: metric
+            columns:
+              - column:
+                  name: metrics_id
+
+        - createIndex:
+            indexName: idx_metrics_repository_id
+            tableName: metrics
+            columns:
+              - column:
+                  name: repository_id
+
+        - createIndex:
+            indexName: idx_metrics_repository_created
+            tableName: metrics
+            columns:
+              - column:
+                  name: repository_id
+              - column:
+                  name: created_at
+
+        - sql:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            sql: CREATE MATERIALIZED VIEW mv_recent_metrics AS SELECT metrics.id AS metrics_id, metrics.created_at AS created_at, metric.id AS metric_id, metric.name, metric.type, metric.values FROM metric JOIN metrics ON metric.metrics_id = metrics.id WHERE metrics.created_at >= (now() - INTERVAL '20 days');
+            stripComments: true
+
+  - changeSet:
+      id: 2
+      author: you
+      changes:
+        - loadData:
+            file: db/metrics.csv
+            tableName: metrics
+            columns:
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+        - loadData:
+            file: db/metrics_filled.csv
+            tableName: metric

@@ -23,6 +23,7 @@ services:
     ]
     volumes:
       - ./liquibase/changelog:/liquibase/changelog
+      - ./liquibase/db:/liquibase/db
     depends_on:
       - postgres
 
