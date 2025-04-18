@@ -106,7 +106,7 @@ class MetricJDBCRepositoryTest {
     assertThatException()
         .isThrownBy(() -> withScope(() -> repository.saveMetrics(metrics)))
         .isInstanceOf(DatabaseInsertException.class)
-        .withMessage("Error when inserting");
+        .withMessage("Error when persisting metrics");
     verify(connection, times(1)).close();
     verify(preparedStatement, times(1)).close();
     verify(connection, times(1)).rollback();
