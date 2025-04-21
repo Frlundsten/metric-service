@@ -42,8 +42,8 @@ public class GetMetricsHandler implements Handler {
 
   private List<MetricsResponseDTO> handleRequest(String fromDate, String toDate) {
     LOG.debug("Get metrics created between {} and {}", fromDate, toDate);
-    var from = Instant.parse(fromDate);
-    var to = Instant.parse(toDate);
+    var from = Instant.parse(fromDate.trim());
+    var to = Instant.parse(toDate.trim());
     var metricsList = forManagingMetrics.getBetweenDates(from, to);
     return metricsList.stream().map(MetricsResponseDTO::from).toList();
   }

@@ -9,7 +9,6 @@ db:
     username: "user"
     password: "password"
   statements:
-    insertMetrics: "INSERT INTO metrics VALUES (?, ?::JSON, ?)"
-    insertSingleMetric: "INSERT INTO metric VALUES (?, ?, ?, ?)"
-
-
+    insert-metrics: "INSERT INTO metrics VALUES (?, ?::JSON, ?, ?)"
+    insert-metric: "INSERT INTO metric VALUES (?, ?, ?, ?, ?::JSONB)"
+    get-between-dates: "SELECT metrics.id AS metrics_id, metrics.created_at AS created_at, metric.id AS metric_id, name, type, values FROM metric JOIN metrics ON metric.metrics_id = metrics.id WHERE metrics.created_at BETWEEN ? AND ?"

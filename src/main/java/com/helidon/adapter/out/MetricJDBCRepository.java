@@ -8,10 +8,13 @@ import com.helidon.adapter.out.entity.MetricsEntity;
 import com.helidon.application.domain.model.Metrics;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
-import com.helidon.exception.DatabaseInsertException;
 import io.helidon.dbclient.DbClient;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,37 +30,28 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   public void saveMetrics(Metrics metrics) {
     LOG.debug("Saving metrics {}", metrics);
 
+    var repoID = RepositoryId.getScopedValue().value();
     var metricsEntity = fromDomain(metrics);
 
-    var db = dbClient.transaction();
+    var tx = dbClient.transaction();
     try {
-      var expectedRows =
-          db.namedInsert(
-              "insertMetrics", metrics.id(), metrics.data(), Timestamp.from(metrics.timestamp()));
-
-      if (expectedRows != 1) {
-        throw new DatabaseInsertException("Expected only one row");
+      tx.createNamedInsert("insert-metrics")
+          .params(
+              metricsEntity.id(),
+              metricsEntity.data(),
+              Timestamp.from(metricsEntity.timestamp()),
+              repoID)
+          .execute();
+      LOG.debug("Metric list size: {}", metricsEntity.metricList().size());
+      for (MetricEntity entity : metricsEntity.metricList()) {
+        tx.createNamedInsert("insert-metric")
+            .params(entity.id(), entity.name(), metricsEntity.id(), entity.type(), entity.values())
+            .execute();
       }
-
-      for (Metric metric : metrics.metricList()) {
-        var rowPerMetric =
-            db.namedInsert(
-                "insertSingleMetric",
-                metric.id(),
-                metric.name(),
-                metrics.id(),
-                metric.type().getType());
-
-        if (rowPerMetric != 1) {
-          throw new DatabaseInsertException("Expected only one row");
-        }
-      }
-
-      db.commit();
+      tx.commit();
     } catch (Exception e) {
-      LOG.error(e.getMessage());
-      db.rollback();
-      throw e;
+      LOG.error("Unable to save metrics.   {}", e.getMessage());
+      tx.rollback();
     }
   }
 
@@ -68,68 +62,48 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
   @Override
   public List<Metrics> getBetweenDates(Instant start, Instant end) {
-    Timestamp from = Timestamp.from(start);
-    Timestamp to = Timestamp.from(end);
 
-    var sql =
-        """
-        SELECT
-            metrics.id AS metrics_id,
-            metrics.created_at AS created_at,
-            metric.id AS metric_id,
-            metric.name,
-            metric.type,
-            metric.values
-        FROM metric
-                 JOIN metrics ON metric.metrics_id = metrics.id
-        WHERE metrics.created_at BETWEEN ? AND ?
-        """;
+    LOG.debug("Getting metrics between {} and {}", start, end);
 
-    try (var conn = dataSource.getConnection()) {
+    var tx = dbClient.transaction();
+    var repoID = RepositoryId.getScopedValue().value();
+    Map<String, MetricsEntity> resultMap = new HashMap<>();
 
-      try (var stmt = conn.prepareStatement(sql)) {
-        stmt.setTimestamp(1, from);
-        stmt.setTimestamp(2, to);
+    try {
+      tx.createNamedQuery("get-between-dates")
+          .params(Timestamp.from(start), Timestamp.from(end))
+          .execute()
+          .forEach(
+              row -> {
+                String metricsId = row.column("metrics_id").get(String.class);
+                Timestamp createdAt = row.column("created_at").get(Timestamp.class);
+                String metricId = row.column("metric_id").get(String.class);
+                String name = row.column("name").get(String.class);
+                String type = row.column("type").get(String.class);
+                String values = row.column("values").get(String.class);
 
-        var rs = stmt.executeQuery();
-        List<MetricsEntity> metricsList = new ArrayList<>();
-        List<MetricEntity> metricList = new ArrayList<>();
+                MetricEntity metricEntity =
+                    new MetricEntity(metricId, name, metricsId, type, values);
 
-        Optional<String> current = Optional.empty();
+                resultMap
+                    .computeIfAbsent(
+                        metricsId,
+                        ignore ->
+                            new MetricsEntity(
+                                metricsId, "{}", createdAt.toInstant(), new ArrayList<>()))
+                    .metricList()
+                    .add(metricEntity);
+              });
 
-        while (rs.next()) {
-          var metricsId = rs.getString("metrics_id");
-          var createdAt = rs.getTimestamp("created_at");
-          var name = rs.getString("name");
-          var type = rs.getString("type");
-          var values = rs.getString("values");
+      List<MetricsEntity> result = new ArrayList<>(resultMap.values());
 
-          if (current.isEmpty() || !current.get().equals(metricsId)) {
-            if (!metricList.isEmpty()) {
-              metricsList.add(
-                  new MetricsEntity(
-                      current.orElse(""),
-                      "{}",
-                      createdAt.toInstant(),
-                      new ArrayList<>(metricList)));
-              metricList.clear();
-            }
-            current = Optional.of(metricsId);
-          }
-
-          metricList.add(new MetricEntity(name, type, values));
-        }
-        return metricsList.stream()
-            .map(
-                entity ->
-                    new Metrics(
-                        entity.id(),
-                        entity.data(),
-                        entity.timestamp(),
-                        entity.metricList().stream().map(MetricEntity::toDomain).toList()))
-            .toList();
-      }
-    } catch (SQLException e) {
+      LOG.debug("FETCHED : {}", result);
+      var domain = result.stream().map(MetricsEntity::toDomain).toList();
+      return domain;
+    } catch (Exception e) {
+      LOG.error(
+          "Unable to get metrics between {} and {} because of {}", start, end, e.getMessage());
+      tx.rollback();
       throw new RuntimeException(e);
     }
   }
