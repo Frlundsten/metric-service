@@ -16,7 +16,7 @@
         <version.slf4j>2.0.16</version.slf4j>
         <version.logback.classic>1.5.16</version.logback.classic>
         <version.smallrye>4.0.8</version.smallrye>
-        <version.junit>5.11.1</version.junit>
+        <version.junit>5.9.3</version.junit>
         <version.assertj>3.27.3</version.assertj>
         <version.mockito.core>5.17.0</version.mockito.core>
     </properties>
@@ -57,7 +57,6 @@
         <dependency>
             <groupId>io.helidon.dbclient</groupId>
             <artifactId>helidon-dbclient-jsonp</artifactId>
-            <version>4.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -71,6 +70,11 @@
         <dependency>
             <groupId>io.helidon.http.media</groupId>
             <artifactId>helidon-http-media-jsonb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.helidon.webserver.testing.junit5</groupId>
+            <artifactId>helidon-webserver-testing-junit5</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -136,9 +140,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                    <release>21</release>
+                    <source>24</source>
+                    <target>24</target>
+                    <release>24</release>
                     <compilerArgs>
                         <arg>--enable-preview</arg>
                     </compilerArgs>
