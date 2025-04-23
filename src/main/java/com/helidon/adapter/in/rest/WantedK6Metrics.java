@@ -1,4 +1,4 @@
-package com.helidon.application.domain;
+package com.helidon.adapter.in.rest;
 
 import java.util.function.Predicate;
 
