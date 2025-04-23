@@ -1,7 +1,7 @@
 package com.helidon.application.port.out.create;
 
-import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.MetricReport;
 
 public interface ForPersistingMetrics {
-    void saveMetrics(Metrics metrics);
+    void saveMetrics(MetricReport metricReport);
 }

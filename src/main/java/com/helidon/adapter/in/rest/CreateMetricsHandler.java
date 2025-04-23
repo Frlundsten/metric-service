@@ -1,6 +1,6 @@
 package com.helidon.adapter.in.rest;
 
-import com.helidon.adapter.in.rest.dto.request.MetricsRequestDTO;
+import com.helidon.adapter.in.rest.dto.request.MetricReportRequestDTO;
 import com.helidon.adapter.RepositoryId;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import com.helidon.util.Mapper;
@@ -19,14 +19,14 @@ public class CreateMetricsHandler implements Handler {
   public CreateMetricsHandler(ForCreateMetrics metricsCreation, Mapper mapper) {
     this.metricsCreation = metricsCreation;
     this.mapper = mapper;
-  }
+}
 
   @Override
   public void handle(ServerRequest req, ServerResponse res) {
     LOG.debug("Processing a post request..");
     var repoIdValue = req.headers().get(HeaderNames.create("Repository-Id"));
     RepositoryId repositoryId = new RepositoryId(repoIdValue.values());
-    var dto = req.content().as(MetricsRequestDTO.class);
+    var dto = req.content().as(MetricReportRequestDTO.class);
       ScopedValue.where(RepositoryId.REPOSITORY_ID, repositoryId)
         .run(
             () -> {
@@ -35,7 +35,7 @@ public class CreateMetricsHandler implements Handler {
             });
   }
 
-  private MetricsRequestDTO handleRequest(MetricsRequestDTO dto) {
+  private MetricReportRequestDTO handleRequest(MetricReportRequestDTO dto) {
     metricsCreation.saveMetrics(mapper.toDomain(dto.metrics()));
     return dto;
   }

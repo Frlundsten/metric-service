@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-class MetricsEntityTest {
+class MetricReportEntityTest {
 
   @Test
   void testAllArgsConstructor() {
@@ -20,7 +20,7 @@ class MetricsEntityTest {
     Instant timestamp = Instant.now();
     List<MetricEntity> metricList = List.of(createMetricEntity());
 
-    MetricsEntity entity = new MetricsEntity(id, data, timestamp, metricList);
+    MetricReportEntity entity = new MetricReportEntity(id, data, timestamp, metricList);
 
     assertEquals(id, entity.id());
     assertEquals(data, entity.data());
@@ -35,7 +35,7 @@ class MetricsEntityTest {
     Instant timestamp = Instant.now();
     List<MetricEntity> metricList = List.of(createMetricEntity());
 
-    MetricsEntity entity = new MetricsEntity(data, timestamp, metricList);
+    MetricReportEntity entity = new MetricReportEntity(data, timestamp, metricList);
 
     assertNotNull(entity.id());
     assertFalse(entity.id().isBlank());

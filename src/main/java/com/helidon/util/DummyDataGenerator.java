@@ -33,8 +33,8 @@ public class DummyDataGenerator {
 
   public static void main(String[] args) {
     try {
-      generateCsv("metrics.csv");
-      System.out.println("metrics.csv generated successfully.");
+      generateCsv("metric_report.csv");
+      System.out.println("metric_report.csv generated successfully.");
     } catch (IOException e) {
       e.printStackTrace();
     }

@@ -1,4 +1,4 @@
-id,name,metrics_id,type,values
+id,name,metric_report_id,type,values
 fbeaf227-23f7-4356-aebe-0ceaa544a6dd,"http_req_failed",24133795-50bd-46b7-bf9d-19e2ba2d270c,gauge,"{""value"":1.5346158013998856,""min"":27.938399511325162,""max"":31.72063869654591}"
 ff1db32c-4214-42be-ac99-e538584c315a,"data_received",24133795-50bd-46b7-bf9d-19e2ba2d270c,gauge,"{""value"":55.776330356255265,""min"":39.12289250588628,""max"":92.2387542605456}"
 205cf15d-3634-4476-9d45-4e9600705d94,"http_req_blocked",24133795-50bd-46b7-bf9d-19e2ba2d270c,counter,"{""count"":949.0510115405899,""rate"":86.29073552391401}"

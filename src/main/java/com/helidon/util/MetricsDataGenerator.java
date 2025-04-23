@@ -201,8 +201,8 @@ public class MetricsDataGenerator {
 
   public static void main(String[] args) {
     try {
-      generateCsv("metrics_filled.csv");
-      System.out.println("metrics_filled.csv generated successfully.");
+      generateCsv("metric_filled.csv");
+      System.out.println("metric_filled.csv generated successfully.");
     } catch (IOException e) {
       e.printStackTrace();
     }

@@ -1,12 +1,12 @@
 package com.helidon;
 
 import com.helidon.adapter.out.entity.MetricEntity;
-import com.helidon.adapter.out.entity.MetricsEntity;
+import com.helidon.adapter.out.entity.MetricReportEntity;
 import com.helidon.application.domain.model.CounterValues;
 import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.MetricName;
-import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.MetricReport;
 import com.helidon.application.domain.model.Values;
 import java.time.Instant;
 import java.util.List;
@@ -19,21 +19,26 @@ public class MetricFactory {
     return new MetricEntity("HTTP_REQ_RECEIVING", "TREND", getValues());
   }
 
-  public static MetricsEntity createMetricsEntityWithList() {
-    return new MetricsEntity("{\"key\":\"val\"}", Instant.now(), List.of(createMetricEntity()));
+  public static MetricReportEntity createMetricReportEntityWithList() {
+    return new MetricReportEntity("{\"key\":\"val\"}", Instant.now(), List.of(createMetricEntity()));
   }
 
-  public static MetricsEntity createMetricsEntityWithEmptyList() {
-    return new MetricsEntity("{\"key\":\"val\"}", Instant.now(), List.of());
+  public static MetricReportEntity createMetricReportEntityWithEmptyList() {
+    return new MetricReportEntity("{\"key\":\"val\"}", Instant.now(), List.of());
   }
 
-  public static Metrics createMetricsWithEmptyList() {
-    return new Metrics("{}", List.of());
+  public static MetricReport createMetricReportWithEmptyList() {
+    return new MetricReport("{}", List.of());
   }
 
-  public static Metrics createMetricsWithList() {
-    return new Metrics(
-        "{}", List.of(new Metric(new MetricName("key"), K6Type.RATE, getCounterValues())));
+  public static MetricReport createMetricReport() {
+    return new MetricReport(
+            "{}", List.of(new Metric(new MetricName("key"), K6Type.RATE, getCounterValues())));
+  }
+
+  public static MetricReport createMetricReport(String metricName) {
+    return new MetricReport(
+            "{}", List.of(new Metric(new MetricName(metricName), K6Type.RATE, getCounterValues())));
   }
 
   private static String getValues() {

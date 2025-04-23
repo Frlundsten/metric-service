@@ -5,8 +5,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
-public record Metrics(String id, String data, Instant timestamp, List<Metric> metricList) {
-  public Metrics(String data, List<Metric> metricList) {
+public record MetricReport(String id, String data, Instant timestamp, List<Metric> metricList) {
+  public MetricReport(String data, List<Metric> metricList) {
     this(
         UUID.randomUUID().toString(),
         data,

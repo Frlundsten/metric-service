@@ -6,22 +6,23 @@ import static com.helidon.util.Mapper.valueFromType;
 import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.MetricName;
-import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.MetricReport;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record MetricsEntity(
+public record MetricReportEntity(
     String id, String data, Instant timestamp, List<MetricEntity> metricList) {
-  public MetricsEntity(String data, Instant timestamp, List<MetricEntity> metricList) {
+  public MetricReportEntity(String data, Instant timestamp, List<MetricEntity> metricList) {
     this(UUID.randomUUID().toString(), data, timestamp, metricList);
   }
 
-  public static MetricsEntity fromDomain(Metrics metrics) {
-    return new MetricsEntity(
-        metrics.data(),
-        metrics.timestamp(),
-        metrics.metricList().stream()
+  public static MetricReportEntity fromDomain(MetricReport metricReport) {
+    return new MetricReportEntity(
+        metricReport.id(),
+        metricReport.data(),
+        metricReport.timestamp(),
+        metricReport.metricList().stream()
             .map(
                 metric ->
                     new MetricEntity(
@@ -29,12 +30,12 @@ public record MetricsEntity(
             .toList());
   }
 
-  public static Metrics toDomain(MetricsEntity metricsEntity) {
-    return new Metrics(
-        metricsEntity.id(),
-        metricsEntity.data(),
-        metricsEntity.timestamp(),
-        metricsEntity.metricList().stream()
+  public static MetricReport toDomain(MetricReportEntity metricReportEntity) {
+    return new MetricReport(
+        metricReportEntity.id(),
+        metricReportEntity.data(),
+        metricReportEntity.timestamp(),
+        metricReportEntity.metricList().stream()
             .map(
                 metric ->
                     new Metric(
