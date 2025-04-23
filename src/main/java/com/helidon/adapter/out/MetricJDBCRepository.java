@@ -1,13 +1,15 @@
 package com.helidon.adapter.out;
 
-import static com.helidon.adapter.out.entity.MetricsEntity.*;
+import static com.helidon.adapter.out.entity.MetricReportEntity.*;
 
 import com.helidon.adapter.RepositoryId;
 import com.helidon.adapter.out.entity.MetricEntity;
-import com.helidon.adapter.out.entity.MetricsEntity;
-import com.helidon.application.domain.model.Metrics;
+import com.helidon.adapter.out.entity.MetricReportEntity;
+import com.helidon.application.domain.model.MetricReport;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
+import com.helidon.exception.DatabaseInsertException;
+import com.helidon.exception.EmptyMetricListException;
 import io.helidon.dbclient.DbClient;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -19,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingStoredMetrics {
-  public static Logger LOG = LoggerFactory.getLogger(MetricJDBCRepository.class);
+  public static final Logger LOG = LoggerFactory.getLogger(MetricJDBCRepository.class);
   private final DbClient dbClient;
 
   public MetricJDBCRepository(DbClient dbClient) {
@@ -27,47 +29,68 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   }
 
   @Override
-  public void saveMetrics(Metrics metrics) {
-    LOG.debug("Saving metrics {}", metrics);
+  public void saveMetrics(MetricReport metricReport) {
+    LOG.debug("Saving metric report {}", metricReport);
+
+    if (metricReport.metricList().isEmpty()) {
+      throw new EmptyMetricListException("No metrics found in report");
+    }
 
     var repoID = RepositoryId.getScopedValue().value();
-    var metricsEntity = fromDomain(metrics);
+    var metricReportEntity = fromDomain(metricReport);
 
     var tx = dbClient.transaction();
     try {
-      tx.createNamedInsert("insert-metrics")
-          .params(
-              metricsEntity.id(),
-              metricsEntity.data(),
-              Timestamp.from(metricsEntity.timestamp()),
-              repoID)
-          .execute();
-      LOG.debug("Metric list size: {}", metricsEntity.metricList().size());
-      for (MetricEntity entity : metricsEntity.metricList()) {
-        tx.createNamedInsert("insert-metric")
-            .params(entity.id(), entity.name(), metricsEntity.id(), entity.type(), entity.values())
-            .execute();
+      var updatedRows =
+          tx.createNamedInsert("insert-metric-report")
+              .params(
+                  metricReportEntity.id(),
+                  metricReportEntity.data(),
+                  Timestamp.from(metricReportEntity.timestamp()),
+                  repoID)
+              .execute();
+
+      if (updatedRows != 1) {
+        throw new DatabaseInsertException("Failed to insert report: " + metricReportEntity);
+      }
+
+      LOG.debug("Metric list size: {}", metricReportEntity.metricList().size());
+      for (MetricEntity entity : metricReportEntity.metricList()) {
+        var updatedRow =
+            tx.createNamedInsert("insert-metric")
+                .params(
+                    entity.id(),
+                    entity.name(),
+                    metricReportEntity.id(),
+                    entity.type(),
+                    entity.values())
+                .execute();
+        if (updatedRow != 1) {
+          throw new DatabaseInsertException("Failed to insert entity: " + entity);
+        }
       }
       tx.commit();
-    } catch (Exception e) {
-      LOG.error("Unable to save metrics.   {}", e.getMessage());
+    } catch (DatabaseInsertException e) {
+      LOG.error("Error inserting metric report: {}", metricReportEntity);
       tx.rollback();
+      throw e;
+    } catch (Exception e) {
+      tx.rollback();
+      throw new DatabaseInsertException("Exception when inserting", e);
     }
   }
 
   @Override
-  public Metrics get(String id) {
+  public MetricReport get(String id) {
     return null;
   }
 
   @Override
-  public List<Metrics> getBetweenDates(Instant start, Instant end) {
-
+  public List<MetricReport> getBetweenDates(Instant start, Instant end) {
     LOG.debug("Getting metrics between {} and {}", start, end);
 
     var tx = dbClient.transaction();
-    var repoID = RepositoryId.getScopedValue().value();
-    Map<String, MetricsEntity> resultMap = new HashMap<>();
+    Map<String, MetricReportEntity> resultMap = new HashMap<>();
 
     try {
       tx.createNamedQuery("get-between-dates")
@@ -75,7 +98,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
           .execute()
           .forEach(
               row -> {
-                String metricsId = row.column("metrics_id").get(String.class);
+                String metricsId = row.column("report_id").get(String.class);
                 Timestamp createdAt = row.column("created_at").get(Timestamp.class);
                 String metricId = row.column("metric_id").get(String.class);
                 String name = row.column("name").get(String.class);
@@ -89,16 +112,16 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
                     .computeIfAbsent(
                         metricsId,
                         ignore ->
-                            new MetricsEntity(
+                            new MetricReportEntity(
                                 metricsId, "{}", createdAt.toInstant(), new ArrayList<>()))
                     .metricList()
                     .add(metricEntity);
               });
 
-      List<MetricsEntity> result = new ArrayList<>(resultMap.values());
+      List<MetricReportEntity> result = new ArrayList<>(resultMap.values());
 
-      LOG.debug("FETCHED : {}", result);
-      var domain = result.stream().map(MetricsEntity::toDomain).toList();
+      LOG.debug("Fetched : {}", result);
+      var domain = result.stream().map(MetricReportEntity::toDomain).toList();
       return domain;
     } catch (Exception e) {
       LOG.error(
