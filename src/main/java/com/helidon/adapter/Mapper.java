@@ -4,19 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helidon.adapter.in.rest.WantedK6Metrics;
 import com.helidon.adapter.in.rest.dto.request.MetricRequestDTO;
-import com.helidon.application.domain.model.CounterValues;
-import com.helidon.application.domain.model.GaugeValues;
 import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.MetricName;
 import com.helidon.application.domain.model.MetricReport;
-import com.helidon.application.domain.model.RateValues;
-import com.helidon.application.domain.model.TrendValues;
 import com.helidon.application.domain.model.Values;
 import com.helidon.exception.EmptyMetricListException;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,47 +21,40 @@ public class Mapper {
   static final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
   public MetricReport toDomain(Map<String, MetricRequestDTO> metrics) {
-    try {
-      var json = toJson(metrics);
-      var listOfMetrics =
-          metrics.entrySet().stream().map(createValidMetric).filter(Objects::nonNull).toList();
-      if (listOfMetrics.isEmpty()) {
-        throw new EmptyMetricListException("No metric data found");
-      }
-      LOG.debug("Created MetricReport list: {}", listOfMetrics);
-      return new MetricReport(json, listOfMetrics);
-    } catch (EmptyMetricListException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    String json = toJson(metrics);
+
+    List<Metric> validMetrics =
+        metrics.entrySet().stream().filter(this::isWantedMetric).map(this::toMetric).toList();
+
+    if (validMetrics.isEmpty()) {
+      throw new EmptyMetricListException("No metric data found");
     }
+
+    LOG.debug("Created MetricReport list: {}", validMetrics);
+    return new MetricReport(json, validMetrics);
   }
 
-  protected Function<Map.Entry<String, MetricRequestDTO>, Metric> createValidMetric =
-      entry -> {
-        if (WantedK6Metrics.isValid().test(entry.getKey().toUpperCase())) {
-          return createMetric(entry.getKey(), entry.getValue());
-        } else {
-          return null;
-        }
-      };
+  private boolean isWantedMetric(Map.Entry<String, MetricRequestDTO> entry) {
+    return WantedK6Metrics.isValid().test(entry.getKey().toUpperCase());
+  }
 
-  protected Metric createMetric(String name, MetricRequestDTO data) {
+  private Metric toMetric(Map.Entry<String, MetricRequestDTO> entry) {
+    return createMetric(entry.getKey(), entry.getValue());
+  }
+
+  protected Metric createMetric(String name, MetricRequestDTO dto) {
     return new Metric(
-        new MetricName(name), K6Type.valueOf(data.type().toUpperCase()), data.values().toDomain());
+        new MetricName(name), K6Type.valueOf(dto.type().toUpperCase()), dto.values().toDomain());
   }
 
-  public static Values valueFromType(String values, String type) {
+  public static Values valueFromType(String values, String typeStr) {
     try {
-      return switch (type) {
-        case "RATE" -> objectMapper.readValue(values, RateValues.class);
-        case "TREND" -> objectMapper.readValue(values, TrendValues.class);
-        case "GAUGE" -> objectMapper.readValue(values, GaugeValues.class);
-        case "COUNTER" -> objectMapper.readValue(values, CounterValues.class);
-        default -> null;
-      };
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+      K6Type type = K6Type.valueOf(typeStr.toUpperCase());
+      return objectMapper.readValue(values, type.getValueClass());
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException("Invalid K6Type: " + typeStr, e);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to deserialize values for type: " + typeStr, e);
     }
   }
 
