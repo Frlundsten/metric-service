@@ -1,4 +1,4 @@
-package com.helidon.util;
+package com.helidon.adapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
