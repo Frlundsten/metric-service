@@ -94,12 +94,12 @@ databaseChangeLog:
             dbms: 'postgresql'
             endDelimiter: \nGO
             splitStatements: true
-            sql: CREATE MATERIALIZED VIEW mv_recent_metrics AS SELECT metric_report.id AS metric_report_id, metric_report.created_at AS created_at, metric.id AS metric_id, metric.name, metric.type, metric.values FROM metric JOIN metric_report ON metric.metric_report_id = metric_report.id WHERE metric_report.created_at >= (now() - INTERVAL '20 days');
+            sql: CREATE MATERIALIZED VIEW mv_recent_metrics AS SELECT metric_report.repository_id AS repo_id, metric_report.id AS metric_report_id, metric_report.created_at AS created_at, metric.id AS metric_id, metric.name, metric.type, metric.values FROM metric JOIN metric_report ON metric.metric_report_id = metric_report.id WHERE metric_report.created_at >= (now() - INTERVAL '30 days');
             stripComments: true
 
   - changeSet:
       id: 2
-      author: you
+      author: Fredrik L
       changes:
         - loadData:
             file: db/metric_report.csv
@@ -111,3 +111,10 @@ databaseChangeLog:
         - loadData:
             file: db/metric_filled.csv
             tableName: metric
+
+        - sql:
+            dbms: 'postgresql'
+            endDelimiter: \nGO
+            splitStatements: true
+            sql: REFRESH MATERIALIZED VIEW mv_recent_metrics;
+            stripComments: true
