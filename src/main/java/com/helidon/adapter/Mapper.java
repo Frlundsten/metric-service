@@ -1,9 +1,9 @@
-package com.helidon.util;
+package com.helidon.adapter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.helidon.adapter.in.rest.dto.request.MetricRequestDTO;
 import com.helidon.adapter.in.rest.WantedK6Metrics;
+import com.helidon.adapter.in.rest.dto.request.MetricRequestDTO;
 import com.helidon.application.domain.model.CounterValues;
 import com.helidon.application.domain.model.GaugeValues;
 import com.helidon.application.domain.model.K6Type;
@@ -13,6 +13,7 @@ import com.helidon.application.domain.model.MetricReport;
 import com.helidon.application.domain.model.RateValues;
 import com.helidon.application.domain.model.TrendValues;
 import com.helidon.application.domain.model.Values;
+import com.helidon.exception.EmptyMetricListException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -28,8 +29,13 @@ public class Mapper {
       var json = toJson(metrics);
       var listOfMetrics =
           metrics.entrySet().stream().map(createValidMetric).filter(Objects::nonNull).toList();
+      if (listOfMetrics.isEmpty()) {
+        throw new EmptyMetricListException("No metric data found");
+      }
       LOG.debug("Created MetricReport list: {}", listOfMetrics);
       return new MetricReport(json, listOfMetrics);
+    } catch (EmptyMetricListException e) {
+      throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -44,7 +50,7 @@ public class Mapper {
         }
       };
 
-  private Metric createMetric(String name, MetricRequestDTO data) {
+  protected Metric createMetric(String name, MetricRequestDTO data) {
     return new Metric(
         new MetricName(name), K6Type.valueOf(data.type().toUpperCase()), data.values().toDomain());
   }
