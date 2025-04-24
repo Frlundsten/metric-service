@@ -8,7 +8,7 @@ import java.util.List;
 public interface ForManagingMetrics {
 
   /**
-   * Get full metrics from an id.
+   * Get a single metric report from an id.
    *
    * @param id
    * @return MetricReport object with provided id
@@ -16,11 +16,18 @@ public interface ForManagingMetrics {
   MetricReport getMetrics(String id);
 
   /**
-   * Get metrics objects from a timespan.
+   * Get metric reports from a timespan.
    *
    * @param start Inclusive
    * @param end Exclusive
    * @return List of MetricReport objects
    */
   List<MetricReport> getBetweenDates(Instant start, Instant end);
+
+  /**
+   * Get recent metric reports.
+   *
+   * @return List of metric reports.
+   */
+  List<MetricReport> getRecent();
 }
