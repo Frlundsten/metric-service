@@ -88,13 +88,14 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   @Override
   public List<MetricReport> getBetweenDates(Instant start, Instant end) {
     LOG.debug("Getting metrics between {} and {}", start, end);
+    var repoId = RepositoryId.getScopedValue().value();
 
     var tx = dbClient.transaction();
     Map<String, MetricReportEntity> resultMap = new HashMap<>();
 
     try {
       tx.createNamedQuery("get-between-dates")
-          .params(Timestamp.from(start), Timestamp.from(end))
+          .params(repoId,Timestamp.from(start), Timestamp.from(end))
           .execute()
           .forEach(
               row -> {
