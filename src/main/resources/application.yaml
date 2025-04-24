@@ -11,4 +11,4 @@ db:
   statements:
     insert-metric-report: "INSERT INTO metric_report VALUES (?, ?::JSON, ?, ?)"
     insert-metric: "INSERT INTO metric VALUES (?, ?, ?, ?, ?::JSONB)"
-    get-between-dates: "SELECT metric_report.id AS report_id, metric_report.created_at AS created_at, metric.id AS metric_id, name, type, values FROM metric JOIN metric_report ON metric.metric_report_id = metric_report.id WHERE created_at BETWEEN ? AND ?"
+    get-between-dates: "SELECT metric_report.id AS report_id, metric_report.created_at AS created_at, metric.id AS metric_id, name, type, values FROM metric JOIN metric_report ON metric.metric_report_id = metric_report.id WHERE repository_id = ? AND created_at BETWEEN ? AND ?"
