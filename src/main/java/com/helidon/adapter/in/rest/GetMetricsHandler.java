@@ -1,6 +1,6 @@
 package com.helidon.adapter.in.rest;
 
-import com.helidon.adapter.in.rest.dto.response.MetricsResponseDTO;
+import com.helidon.adapter.in.rest.dto.response.MetricReportResponseDTO;
 import com.helidon.adapter.RepositoryId;
 import com.helidon.application.port.in.manage.ForManagingMetrics;
 import io.helidon.http.HeaderNames;
@@ -40,11 +40,11 @@ public class GetMetricsHandler implements Handler {
             });
   }
 
-  private List<MetricsResponseDTO> handleRequest(String fromDate, String toDate) {
+  private List<MetricReportResponseDTO> handleRequest(String fromDate, String toDate) {
     LOG.debug("Get metrics created between {} and {}", fromDate, toDate);
     var from = Instant.parse(fromDate.trim());
     var to = Instant.parse(toDate.trim());
     var metricsList = forManagingMetrics.getBetweenDates(from, to);
-    return metricsList.stream().map(MetricsResponseDTO::from).toList();
+    return metricsList.stream().map(MetricReportResponseDTO::from).toList();
   }
 }
