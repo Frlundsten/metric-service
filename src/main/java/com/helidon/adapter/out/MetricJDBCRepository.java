@@ -69,6 +69,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
           throw new DatabaseInsertException("Failed to insert entity: " + entity);
         }
       }
+      tx.createUpdate("REFRESH MATERIALIZED VIEW mv_recent_metrics").execute();
       tx.commit();
     } catch (DatabaseInsertException e) {
       LOG.error("Error inserting metric report: {}", metricReportEntity);
@@ -95,7 +96,7 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
     try {
       tx.createNamedQuery("get-between-dates")
-          .params(repoId,Timestamp.from(start), Timestamp.from(end))
+          .params(repoId, Timestamp.from(start), Timestamp.from(end))
           .execute()
           .forEach(
               row -> {
@@ -122,13 +123,56 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       List<MetricReportEntity> result = new ArrayList<>(resultMap.values());
 
       LOG.debug("Fetched : {}", result);
-      var domain = result.stream().map(MetricReportEntity::toDomain).toList();
-      return domain;
+      return result.stream().map(MetricReportEntity::toDomain).toList();
     } catch (Exception e) {
       LOG.error(
           "Unable to get metrics between {} and {} because of {}", start, end, e.getMessage());
       tx.rollback();
-      throw new RuntimeException(e);
     }
+    return List.of();
+  }
+
+  @Override
+  public List<MetricReport> getRecentFromView() {
+    LOG.debug("Getting metrics from view");
+
+    var repoId = RepositoryId.getScopedValue().value();
+
+    var tx = dbClient.transaction();
+    Map<String, MetricReportEntity> resultMap = new HashMap<>();
+    try {
+      tx.createNamedQuery("view-last-thirty-days")
+          .params(repoId)
+          .execute()
+          .forEach(
+              row -> {
+                String metricsId = row.column("report_id").get(String.class);
+                Timestamp createdAt = row.column("created_at").get(Timestamp.class);
+                String metricId = row.column("metric_id").get(String.class);
+                String name = row.column("name").get(String.class);
+                String type = row.column("type").get(String.class);
+                String values = row.column("values").get(String.class);
+
+                MetricEntity metricEntity =
+                    new MetricEntity(metricId, name, metricsId, type, values);
+
+                resultMap
+                    .computeIfAbsent(
+                        metricsId,
+                        _ ->
+                            new MetricReportEntity(
+                                metricsId, "{}", createdAt.toInstant(), new ArrayList<>()))
+                    .metricList()
+                    .add(metricEntity);
+              });
+
+      List<MetricReportEntity> result = new ArrayList<>(resultMap.values());
+
+      return result.stream().map(MetricReportEntity::toDomain).toList();
+    } catch (Exception e) {
+      LOG.error("Something went wrong", e);
+      tx.rollback();
+    }
+    return List.of();
   }
 }

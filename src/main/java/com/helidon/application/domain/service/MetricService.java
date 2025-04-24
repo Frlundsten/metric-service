@@ -33,4 +33,9 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
   public List<MetricReport> getBetweenDates(Instant from, Instant to) {
     return manageStoredMetrics.getBetweenDates(from, to);
   }
+
+  @Override
+  public List<MetricReport> getRecent() {
+    return manageStoredMetrics.getRecentFromView();
+  }
 }
