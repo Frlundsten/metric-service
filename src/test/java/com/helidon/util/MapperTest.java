@@ -2,6 +2,7 @@ package com.helidon.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.helidon.adapter.Mapper;
 import com.helidon.adapter.in.rest.dto.TrendValuesDTO;
 import com.helidon.adapter.in.rest.dto.request.MetricRequestDTO;
 import com.helidon.application.domain.model.MetricReport;

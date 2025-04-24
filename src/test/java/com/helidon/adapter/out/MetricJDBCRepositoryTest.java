@@ -153,8 +153,7 @@ class MetricJDBCRepositoryTest {
     DbColumn type = mock(DbColumn.class);
     DbColumn values = mock(DbColumn.class);
 
-
-    when(row.column("metrics_id")).thenReturn(metricsId);
+    when(row.column("report_id")).thenReturn(metricsId);
     when(row.column("created_at")).thenReturn(createdAt);
     when(row.column("metric_id")).thenReturn(metricId);
     when(row.column("name")).thenReturn(name);
@@ -183,7 +182,7 @@ class MetricJDBCRepositoryTest {
     when(dbStatementQuery.params(any(Object[].class))).thenReturn(dbStatementQuery);
     when(dbStatementQuery.execute()).thenReturn(rows);
 
-    var result = repository.getBetweenDates(from, to);
+    var result = withScope(()-> repository.getBetweenDates(from, to));
 
     assertThat(result).isNotEmpty();
     var report = result.getFirst();
