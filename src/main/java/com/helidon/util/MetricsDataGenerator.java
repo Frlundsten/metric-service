@@ -139,7 +139,7 @@ public class MetricsDataGenerator {
     // Loop over the metric IDs and generate data for each
       for (String metricId : metricIds) {
           for (String name : metricNames) {
-              String id = UUID.randomUUID().toString();
+              UUID id = UUID.randomUUID();
               String type = getRandomMetricType();
               String valuesJson = getRandomMetricValues(type);
 

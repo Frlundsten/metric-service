@@ -2,7 +2,8 @@ package com.helidon.startup;
 
 import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
-import com.helidon.adapter.in.rest.GetMetricsHandler;
+import com.helidon.adapter.in.rest.ReportTimespanHandler;
+import com.helidon.adapter.in.rest.RecentReportshandler;
 import com.helidon.adapter.out.MetricJDBCRepository;
 import com.helidon.application.domain.service.MetricService;
 import com.helidon.adapter.Mapper;
@@ -12,6 +13,7 @@ import io.helidon.webserver.WebServer;
 import io.helidon.webserver.http.HttpRouting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class HelidonWebserver {
 
@@ -27,10 +29,11 @@ public class HelidonWebserver {
     MetricJDBCRepository repository = new MetricJDBCRepository(dbClient);
     MetricService metricService = new MetricService(repository, repository);
     CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricService, mapper);
-    GetMetricsHandler getMetricsHandler = new GetMetricsHandler(metricService);
+    ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(metricService);
+    RecentReportshandler recentReportshandler = new RecentReportshandler(metricService);
 
     DelegatingService delegatingService =
-        new DelegatingService(createMetricsHandler, getMetricsHandler);
+        new DelegatingService(createMetricsHandler, reportTimespanHandler,recentReportshandler);
 
     WebServer.builder()
         .config(config.get("server"))

@@ -8,7 +8,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
-import com.helidon.adapter.in.rest.GetMetricsHandler;
+import com.helidon.adapter.in.rest.RecentReportshandler;
+import com.helidon.adapter.in.rest.ReportTimespanHandler;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import com.helidon.application.port.in.manage.ForManagingMetrics;
 import com.helidon.adapter.Mapper;
@@ -37,10 +38,11 @@ class HelidonServerTest {
 
   @SetUpRoute
   static void routing(HttpRouting.Builder builder) {
-    GetMetricsHandler getMetricsHandler = new GetMetricsHandler(mock(ForManagingMetrics.class));
+    ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(mock(ForManagingMetrics.class));
     CreateMetricsHandler createMetricsHandler =
         new CreateMetricsHandler(mock(ForCreateMetrics.class), mock(Mapper.class));
-    var fooService = new DelegatingService(createMetricsHandler, getMetricsHandler);
+    RecentReportshandler recentReportsHandler = new RecentReportshandler(mock(ForManagingMetrics.class));
+    var fooService = new DelegatingService(createMetricsHandler, reportTimespanHandler,recentReportsHandler);
     fooService.routing(builder);
   }
 
