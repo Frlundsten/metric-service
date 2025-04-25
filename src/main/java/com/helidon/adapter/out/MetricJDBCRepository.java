@@ -11,12 +11,21 @@ import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
 import com.helidon.exception.DatabaseInsertException;
 import com.helidon.exception.EmptyMetricListException;
 import io.helidon.dbclient.DbClient;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.StructuredTaskScope;
+
+import io.helidon.dbclient.DbStatement;
+import io.helidon.dbclient.DbStatements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +48,8 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
     var repoID = RepositoryId.getScopedValue().value();
     var metricReportEntity = fromDomain(metricReport);
 
+    structuredInsert();
+
     var tx = dbClient.transaction();
     try {
       var updatedRows =
@@ -55,21 +66,38 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       }
 
       LOG.debug("Metric list size: {}", metricReportEntity.metricList().size());
-      for (MetricEntity entity : metricReportEntity.metricList()) {
-        var updatedRow =
-            tx.createNamedInsert("insert-metric")
-                .params(
-                    entity.id(),
-                    entity.name(),
-                    metricReportEntity.id(),
-                    entity.type(),
-                    entity.values())
-                .execute();
-        if (updatedRow != 1) {
-          throw new DatabaseInsertException("Failed to insert entity: " + entity);
+
+      String sql = "INSERT INTO metric VALUES (?::UUID, ?, ?::UUID, ?, ?::JSONB)";
+      try(var connection = dbClient.unwrap(Connection.class);
+      var stmt = connection.prepareStatement(sql)) {
+        connection.setAutoCommit(false);
+        for (MetricEntity entity : metricReportEntity.metricList()) {
+          stmt.setObject(1, entity.id());
+          stmt.setString(2, entity.name());
+          stmt.setObject(3, metricReportEntity.id());
+          stmt.setString(4, entity.type());
+          stmt.setString(5, entity.type());
+          stmt.addBatch();
         }
+        stmt.executeBatch();
+      }catch (SQLException e){
+
       }
-      tx.createUpdate("REFRESH MATERIALIZED VIEW mv_recent_metrics").execute();
+
+//      for (MetricEntity entity : metricReportEntity.metricList()) {
+//        var updatedRow =
+//            tx.createNamedInsert("insert-metric")
+//                .params(
+//                    entity.id(),
+//                    entity.name(),
+//                    metricReportEntity.id(),
+//                    entity.type(),
+//                    entity.values())
+//                .execute();
+//        if (updatedRow != 1) {
+//          throw new DatabaseInsertException("Failed to insert entity: " + entity);
+//        }
+
       tx.commit();
     } catch (DatabaseInsertException e) {
       LOG.error("Error inserting metric report: {}", metricReportEntity);
@@ -78,6 +106,20 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
     } catch (Exception e) {
       tx.rollback();
       throw new DatabaseInsertException("Exception when inserting", e);
+    }
+  }
+
+  /**
+   * Helidon dbclient does not seem to support batch updates.
+   * We need to unwrap the connection from the dbClient and use the inherit SQL logic to batch the metrics that will be inserted.
+   * This will end up with one commit from dbclient transaction and one commit from a connection transaction.
+   * Since these two separate commits persist data, the possibility is that one might fail while the other succeeds.
+   * To make this fail-safe, we need to run this in a structured concurrency.
+   * It's all or nothing.
+   */
+  private void structuredInsert() {
+    try(var structuredScope = new StructuredTaskScope.ShutdownOnFailure()){
+
     }
   }
 
@@ -91,18 +133,19 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
     LOG.debug("Getting metrics between {} and {}", start, end);
     var repoId = RepositoryId.getScopedValue().value();
 
-    var tx = dbClient.transaction();
-    Map<String, MetricReportEntity> resultMap = new HashMap<>();
+    Map<UUID, MetricReportEntity> resultMap = new HashMap<>();
 
     try {
-      tx.createNamedQuery("get-between-dates")
+      dbClient
+          .execute()
+          .createNamedQuery("get-between-dates")
           .params(repoId, Timestamp.from(start), Timestamp.from(end))
           .execute()
           .forEach(
               row -> {
-                String metricsId = row.column("report_id").get(String.class);
+                UUID metricsId = row.column("report_id").get(UUID.class);
                 Timestamp createdAt = row.column("created_at").get(Timestamp.class);
-                String metricId = row.column("metric_id").get(String.class);
+                UUID metricId = row.column("metric_id").get(UUID.class);
                 String name = row.column("name").get(String.class);
                 String type = row.column("type").get(String.class);
                 String values = row.column("values").get(String.class);
@@ -127,7 +170,6 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
     } catch (Exception e) {
       LOG.error(
           "Unable to get metrics between {} and {} because of {}", start, end, e.getMessage());
-      tx.rollback();
     }
     return List.of();
   }
@@ -135,20 +177,20 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   @Override
   public List<MetricReport> getRecentFromView() {
     LOG.debug("Getting metrics from view");
-
     var repoId = RepositoryId.getScopedValue().value();
+    Map<UUID, MetricReportEntity> resultMap = new HashMap<>();
 
-    var tx = dbClient.transaction();
-    Map<String, MetricReportEntity> resultMap = new HashMap<>();
     try {
-      tx.createNamedQuery("view-last-thirty-days")
+      dbClient
+          .execute()
+          .createNamedQuery("view-last-thirty-days")
           .params(repoId)
           .execute()
           .forEach(
               row -> {
-                String metricsId = row.column("report_id").get(String.class);
+                UUID metricsId = row.column("metric_report_id").get(UUID.class);
                 Timestamp createdAt = row.column("created_at").get(Timestamp.class);
-                String metricId = row.column("metric_id").get(String.class);
+                UUID metricId = row.column("metric_id").get(UUID.class);
                 String name = row.column("name").get(String.class);
                 String type = row.column("type").get(String.class);
                 String values = row.column("values").get(String.class);
@@ -171,7 +213,6 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       return result.stream().map(MetricReportEntity::toDomain).toList();
     } catch (Exception e) {
       LOG.error("Something went wrong", e);
-      tx.rollback();
     }
     return List.of();
   }
