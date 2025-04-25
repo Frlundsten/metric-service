@@ -12,7 +12,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: VARCHAR (36)
+                  type: UUID
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -34,7 +34,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: VARCHAR (36)
+                  type: UUID
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -43,7 +43,7 @@ databaseChangeLog:
                   type: VARCHAR (100)
               - column:
                   name: metric_report_id
-                  type: VARCHAR (36)
+                  type: UUID
               - column:
                   name: type
                   type: VARCHAR (50)

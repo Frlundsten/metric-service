@@ -7,9 +7,9 @@ import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.MetricName;
 import java.util.UUID;
 
-public record MetricEntity(String id, String name, String metricsId, String type, String values) {
+public record MetricEntity(UUID id, String name, UUID metricsId, String type, String values) {
   public MetricEntity(String name, String type, String values) {
-    this(UUID.randomUUID().toString(), name,null, type, values);
+    this(UUID.randomUUID(), name,null, type, values);
   }
 
   public static Metric toDomain(MetricEntity metricEntity) {

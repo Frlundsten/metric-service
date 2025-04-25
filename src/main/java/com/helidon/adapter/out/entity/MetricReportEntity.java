@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.UUID;
 
 public record MetricReportEntity(
-    String id, String data, Instant timestamp, List<MetricEntity> metricList) {
+    UUID id, String data, Instant timestamp, List<MetricEntity> metricList) {
   public MetricReportEntity(String data, Instant timestamp, List<MetricEntity> metricList) {
-    this(UUID.randomUUID().toString(), data, timestamp, metricList);
+    this(UUID.randomUUID(), data, timestamp, metricList);
   }
 
   public static MetricReportEntity fromDomain(MetricReport metricReport) {

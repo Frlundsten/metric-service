@@ -10,7 +10,6 @@ import com.helidon.application.domain.model.MetricName;
 import com.helidon.application.domain.model.MetricReport;
 import com.helidon.application.domain.model.Values;
 import com.helidon.exception.EmptyMetricListException;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -47,14 +46,12 @@ public class Mapper {
         new MetricName(name), K6Type.valueOf(dto.type().toUpperCase()), dto.values().toDomain());
   }
 
-  public static Values valueFromType(String values, String typeStr) {
+  public static Values valueFromType(String values, String metricType) {
     try {
-      K6Type type = K6Type.valueOf(typeStr.toUpperCase());
+      K6Type type = K6Type.valueOf(metricType.toUpperCase());
       return objectMapper.readValue(values, type.getValueClass());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalStateException("Invalid K6Type: " + typeStr, e);
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to deserialize values for type: " + typeStr, e);
+    } catch (IllegalArgumentException | JsonProcessingException e) {
+      throw new IllegalStateException("Invalid K6Type: " + metricType, e);
     }
   }
 
