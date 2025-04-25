@@ -11,7 +11,7 @@ public class ObjectMapperFactory {
     ObjectMapper objectMapper = new ObjectMapper();
     JavaTimeModule javaTimeModule = new JavaTimeModule();
     objectMapper.registerModule(javaTimeModule);
-    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,false);
     return objectMapper;
   }
 }
