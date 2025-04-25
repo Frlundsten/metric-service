@@ -44,6 +44,26 @@ paths:
         404:
           description: Not found
 
+  /metrics/recent:
+    get:
+      description: Fetch metrics from a view of the past 30 days
+      parameters:
+        - $ref: '#/components/parameters/repository-id'
+      responses:
+        200:
+          description: Data was fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Metrics'
+
+        500:
+          description: Internal server error
+        404:
+          description: Not found
+
 components:
   parameters:
     repository-id:
@@ -83,35 +103,61 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              metrics:
-                $ref: '#/components/schemas/MetricRequestObject'
+            $ref: '#/components/schemas/Metric-Request-Object'
+
+    metric-report-recent-response:
+      content:
+        application/json:
+          schema:
+            $ref: #/components/schemas/Metric-Recent-Response-Object'
 
   schemas:
-    MetricRequestObject:
+    Metric-Request-Object:
       description: Object that holds specific metrics data
       type: object
+      required:
+        - metrics
       properties:
-        values:
+        metrics:
           type: object
           additionalProperties:
-            type: number
-        type:
-          type: string
-        contains:
-          type: string
+            type: object
+            description: Specific metric object
+            properties:
+              type:
+                type: string
+                description: Type of the metric (e.g., "rate", "counter", "trend", "gauge")
+              contains:
+                type: string
+                description: What the metric contains (e.g., "default", "data", "time")
+              values:
+                type: object
+                additionalProperties:
+                  type: number
+                  description: Metric values (e.g., "rate", "avg", "min", etc.)
       example:
-        http_req_request:
-          values:
-            min: 0
-            med: 0
-            max: 0
-            "p(90)": 0
-            "p(95)": 0
-            avg: 0
-          type: "trend"
-          contains: "time"
+        options:
+          summaryTrendStats: [ "avg", "min", "med", "max", "p(90)", "p(95)" ]
+          summaryTimeUnit: ""
+          noColor: false
+        state:
+          isStdOutTTY: true
+          isStdErrTTY: true
+          testRunDurationMs: 10013.6525
+        metrics:
+          http_req_failed:
+            type: "rate"
+            contains: "default"
+            values:
+              rate: 0
+              passes: 0
+              fails: 100
+          data_received:
+            type: "counter"
+            contains: "data"
+            values:
+              count: 10600
+              rate: 1058.5548080483122
 
     Metrics:
       description: Object that holds multiple metrics data
@@ -125,11 +171,35 @@ components:
           type: string
           description: JSON-encoded string containing the metric data
         timestamp:
-          type: number
-          format: float
+          type: string
+          format: date-time
           description: Timestamp for when the data was collected
+          example: "2025-04-25T12:34:56Z"
         metricList:
           type: array
           items:
-            $ref: '#/components/schemas/MetricRequestObject'
+            $ref: '#/components/schemas/Metric'
           description: A list of additional metrics
+
+    Metric:
+      description: Object that hold specific metric information
+      properties:
+        type:
+          type: string
+          description: Type of the metric (e.g., "rate", "counter", "trend", "gauge")
+        contains:
+          type: string
+          description: What the metric contains (e.g., "default", "data", "time")
+        values:
+          type: object
+          additionalProperties:
+            type: number
+            description: Metric values (e.g., "rate", "avg", "min", etc.)
+      example:
+        http_req_failed:
+          type: "rate"
+          contains: "default"
+          values:
+            rate: 0
+            passes: 0
+            fails: 100

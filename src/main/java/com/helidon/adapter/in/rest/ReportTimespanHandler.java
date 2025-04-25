@@ -1,7 +1,7 @@
 package com.helidon.adapter.in.rest;
 
-import com.helidon.adapter.in.rest.dto.response.MetricReportResponseDTO;
 import com.helidon.adapter.RepositoryId;
+import com.helidon.adapter.in.rest.dto.response.MetricReportResponseDTO;
 import com.helidon.application.port.in.manage.ForManagingMetrics;
 import io.helidon.http.HeaderNames;
 import io.helidon.webserver.http.Handler;
@@ -13,12 +13,12 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetMetricsHandler implements Handler {
-  public static final Logger LOG = LoggerFactory.getLogger(GetMetricsHandler.class);
-  private final ForManagingMetrics forManagingMetrics;
+public class ReportTimespanHandler implements Handler {
+  public static final Logger LOG = LoggerFactory.getLogger(ReportTimespanHandler.class);
+  private final ForManagingMetrics manage;
 
-  public GetMetricsHandler(ForManagingMetrics forManagingMetrics) {
-    this.forManagingMetrics = forManagingMetrics;
+  public ReportTimespanHandler(ForManagingMetrics forManagingMetrics) {
+    this.manage = forManagingMetrics;
   }
 
   @Override
@@ -44,7 +44,7 @@ public class GetMetricsHandler implements Handler {
     LOG.debug("Get metrics created between {} and {}", fromDate, toDate);
     var from = Instant.parse(fromDate.trim());
     var to = Instant.parse(toDate.trim());
-    var metricsList = forManagingMetrics.getBetweenDates(from, to);
+    var metricsList = manage.getBetweenDates(from, to);
     return metricsList.stream().map(MetricReportResponseDTO::from).toList();
   }
 }
