@@ -2,6 +2,8 @@ package com.helidon.util;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -112,23 +114,25 @@ public class MetricsDataGenerator {
   };
 
   // Metric names (corresponding to the metricIds)
-  private static final String[] metricNames = {
-    "http_req_failed",
-    "data_received",
-    "http_req_blocked",
-    "http_req_receiving",
-    "iterations",
-    "data_sent",
-    "iteration_duration",
-    "http_req_sending",
-    "http_req_duration",
-    "http_req_tls_handshaking",
-    "vus_max",
-    "http_req_waiting",
-    "http_req_connecting",
-    "vus",
-    "http_reqs"
-  };
+  private static final Map<String, String> metricNames = new HashMap<>();
+
+  static {
+    metricNames.put("http_req_failed", "rate");
+    metricNames.put("data_received", "counter");
+    metricNames.put("http_req_blocked", "trend");
+    metricNames.put("http_req_receiving", "trend");
+    metricNames.put("iterations", "counter");
+    metricNames.put("data_sent", "counter");
+    metricNames.put("iteration_duration", "trend");
+    metricNames.put("http_req_sending", "trend");
+    metricNames.put("http_req_duration", "trend");
+    metricNames.put("http_req_tls_handshaking", "trend");
+    metricNames.put("vus_max", "gauge");
+    metricNames.put("http_req_waiting", "trend");
+    metricNames.put("http_req_connecting", "trend");
+    metricNames.put("vus", "gauge");
+    metricNames.put("http_reqs", "counter");
+  }
 
   public static void generateCsv(String path) throws IOException {
     FileWriter writer = new FileWriter(path);
@@ -137,17 +141,16 @@ public class MetricsDataGenerator {
     Random rand = new Random();
 
     // Loop over the metric IDs and generate data for each
-      for (String metricId : metricIds) {
-          for (String name : metricNames) {
-              String id = UUID.randomUUID().toString();
-              String type = getRandomMetricType();
-              String valuesJson = getRandomMetricValues(type);
+    for (String metricId : metricIds) {
+      for (Map.Entry<String, String> name : metricNames.entrySet()) {
+        UUID id = UUID.randomUUID();
+        String type = name.getValue();
+        String valuesJson = getRandomMetricValues(type);
 
-              // Write the data to the CSV file
-              writer.write(
-                      String.format("%s,\"%s\",%s,%s,%s\n", id, name, metricId, type, valuesJson));
-          }
+        // Write the data to the CSV file
+        writer.write(String.format("%s,\"%s\",%s,%s,%s\n", id, name.getKey(), metricId, type, valuesJson));
       }
+    }
 
     writer.close();
   }
@@ -175,7 +178,8 @@ public class MetricsDataGenerator {
       case "counter":
         values =
             String.format(
-                "\"{\"\"count\"\":%s,\"\"rate\"\":%s}\"", rand.nextDouble() * 1000, rand.nextDouble() * 100);
+                "\"{\"\"count\"\":%s,\"\"rate\"\":%s}\"",
+                rand.nextDouble() * 1000, rand.nextDouble() * 100);
         break;
       case "trend":
         values =
@@ -201,8 +205,8 @@ public class MetricsDataGenerator {
 
   public static void main(String[] args) {
     try {
-      generateCsv("metrics_filled.csv");
-      System.out.println("metrics_filled.csv generated successfully.");
+      generateCsv("metric_filled.csv");
+      System.out.println("metric_filled.csv generated successfully.");
     } catch (IOException e) {
       e.printStackTrace();
     }

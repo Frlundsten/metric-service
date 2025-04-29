@@ -1,25 +1,33 @@
 package com.helidon.application.port.out.manage;
 
-import com.helidon.application.domain.model.Metrics;
+import com.helidon.application.domain.model.MetricReport;
 
 import java.time.Instant;
 import java.util.List;
 
 public interface ForManagingStoredMetrics {
   /**
-   * Get full metrics from an id.
+   * Get metric report from id.
    *
-   * @param id
-   * @return Metrics object with provided id
+   * @param id Id of the wanted metric report
+   * @return Metric report object from provided id
    */
-  Metrics get(String id);
+  MetricReport get(String id);
 
   /**
    * Get metrics objects from a timespan.
    *
    * @param start Inclusive
    * @param end Exclusive
-   * @return List of Metrics objects
+   * @return List of MetricReport objects
    */
-  List<Metrics> getBetweenDates(Instant start, Instant end);
+  List<MetricReport> getBetweenDates(Instant start, Instant end);
+
+  /**
+   * Retrieves metric reports from a fixed view.
+   * This operation returns reports from a recent timespan, typically based on a predefined time range.
+   *
+   * @return a list of {@link MetricReport} objects containing the metric reports.
+   */
+  List<MetricReport> getRecentFromView();
 }

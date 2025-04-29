@@ -6,16 +6,18 @@ import io.helidon.webserver.http.HttpService;
 public class DelegatingService implements HttpService {
 
   private final CreateMetricsHandler metricsHandler;
-  private final GetMetricsHandler getMetricsHandler;
+  private final ReportTimespanHandler getMetricsHandler;
+  private final RecentReportshandler recentReportsHandler;
 
   public DelegatingService(
-      CreateMetricsHandler metricsHandler, GetMetricsHandler getMetricsHandler) {
+          CreateMetricsHandler metricsHandler, ReportTimespanHandler getMetricsHandler, RecentReportshandler recentReportsHandler) {
     this.metricsHandler = metricsHandler;
     this.getMetricsHandler = getMetricsHandler;
+    this.recentReportsHandler = recentReportsHandler;
   }
 
   @Override
   public void routing(HttpRules rules) {
-    rules.post(metricsHandler).get(getMetricsHandler);
+    rules.post(metricsHandler).get("/recent", recentReportsHandler).get(getMetricsHandler);
   }
 }

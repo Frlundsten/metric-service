@@ -1,11 +1,23 @@
 server:
   port: 8080
-  host: "localhost"
+  concurrency-limit:
+    aimd:
+      min-limit: 100
+      max-limit: 1000
+      initial-limit: 500
+      timeout: "PT0.5S"
+      backoff-ratio: 0.75
+      queue-length: 300
+      queue-timeout: PT1S
 
-#db:
-#  source: "jdbc"
-#  connection:
-#    url: "jdbc:postgresql://localhost:5432/helidon"
-#    username: "user"
-#    password: "password"
-
+db:
+  source: "jdbc"
+  connection:
+    url: "jdbc:postgresql://localhost:5432/helidon"
+    username: "user"
+    password: "password"
+  statements:
+    insert-metric-report: "INSERT INTO metric_report VALUES (?::UUID, ?::JSON, ?, ?)"
+    insert-metric: "INSERT INTO metric VALUES (?::UUID, ?, ?::UUID, ?, ?::JSONB)"
+    get-between-dates: "SELECT metric_report.id AS report_id, metric_report.created_at AS created_at, metric.id AS metric_id, name, type, values FROM metric JOIN metric_report ON metric.metric_report_id = metric_report.id WHERE repository_id = ? AND created_at BETWEEN ? AND ?"
+    view-last-thirty-days: "SELECT * FROM mv_recent_metrics WHERE repo_id = ?"

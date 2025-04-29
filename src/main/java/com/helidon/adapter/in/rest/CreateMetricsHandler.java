@@ -1,13 +1,15 @@
 package com.helidon.adapter.in.rest;
 
-import com.helidon.adapter.in.rest.dto.request.MetricsRequestDTO;
+import com.helidon.adapter.Mapper;
 import com.helidon.adapter.RepositoryId;
+import com.helidon.adapter.in.rest.dto.request.MetricReportRequestDTO;
 import com.helidon.application.port.in.create.ForCreateMetrics;
-import com.helidon.util.Mapper;
 import io.helidon.http.HeaderNames;
+import io.helidon.http.media.jackson.JacksonRuntimeException;
 import io.helidon.webserver.http.Handler;
 import io.helidon.webserver.http.ServerRequest;
 import io.helidon.webserver.http.ServerResponse;
+import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,18 +26,25 @@ public class CreateMetricsHandler implements Handler {
   @Override
   public void handle(ServerRequest req, ServerResponse res) {
     LOG.debug("Processing a post request..");
-    var repoIdValue = req.headers().get(HeaderNames.create("Repository-Id"));
-    RepositoryId repositoryId = new RepositoryId(repoIdValue.values());
-    var dto = req.content().as(MetricsRequestDTO.class);
+    try {
+      var repoIdValue = req.headers().get(HeaderNames.create("Repository-Id"));
+      RepositoryId repositoryId = new RepositoryId(repoIdValue.values());
+      var dto = req.content().as(MetricReportRequestDTO.class);
       ScopedValue.where(RepositoryId.REPOSITORY_ID, repositoryId)
-        .run(
-            () -> {
-              var response = handleRequest(dto);
-              res.status(200).send(response);
-            });
+          .run(
+              () -> {
+                var response = handleRequest(dto);
+                res.status(201).send(response);
+              });
+    } catch (NoSuchElementException e) {
+      res.status(400).send("No header");
+    } catch (JacksonRuntimeException e) {
+      LOG.error("Invalid request body", e);
+      res.status(400).send("Invalid request body");
+    }
   }
 
-  private MetricsRequestDTO handleRequest(MetricsRequestDTO dto) {
+  private MetricReportRequestDTO handleRequest(MetricReportRequestDTO dto) {
     metricsCreation.saveMetrics(mapper.toDomain(dto.metrics()));
     return dto;
   }
