@@ -143,7 +143,6 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
       List<MetricReportEntity> result = new ArrayList<>(resultMap.values());
 
-      LOG.debug("Fetched : {}", result);
       return result.stream().map(MetricReportEntity::toDomain).toList();
     } catch (Exception e) {
       LOG.error(
