@@ -127,9 +127,6 @@ components:
               type:
                 type: string
                 description: Type of the metric (e.g., "rate", "counter", "trend", "gauge")
-              contains:
-                type: string
-                description: What the metric contains (e.g., "default", "data", "time")
               values:
                 type: object
                 additionalProperties:
@@ -147,14 +144,12 @@ components:
         metrics:
           http_req_failed:
             type: "rate"
-            contains: "default"
             values:
               rate: 0
               passes: 0
               fails: 100
           data_received:
             type: "counter"
-            contains: "data"
             values:
               count: 10600
               rate: 1058.5548080483122
@@ -187,9 +182,6 @@ components:
         type:
           type: string
           description: Type of the metric (e.g., "rate", "counter", "trend", "gauge")
-        contains:
-          type: string
-          description: What the metric contains (e.g., "default", "data", "time")
         values:
           type: object
           additionalProperties:
@@ -198,7 +190,6 @@ components:
       example:
         http_req_failed:
           type: "rate"
-          contains: "default"
           values:
             rate: 0
             passes: 0
