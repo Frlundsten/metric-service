@@ -29,8 +29,9 @@ public class Mapper {
       throw new EmptyMetricListException("No metric data found");
     }
 
-    LOG.debug("Created MetricReport list: {}", validMetrics);
-    return new MetricReport(json, validMetrics);
+    var report = new MetricReport(json, validMetrics);
+    LOG.debug("Created MetricReport: {}", report);
+    return report;
   }
 
   private boolean isWantedMetric(Map.Entry<String, MetricRequestDTO> entry) {
