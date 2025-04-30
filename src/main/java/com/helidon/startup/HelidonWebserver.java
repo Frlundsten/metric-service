@@ -3,7 +3,7 @@ package com.helidon.startup;
 import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
 import com.helidon.adapter.in.rest.ReportTimespanHandler;
-import com.helidon.adapter.in.rest.RecentReportshandler;
+import com.helidon.adapter.in.rest.RecentReportsHandler;
 import com.helidon.adapter.out.MetricJDBCRepository;
 import com.helidon.application.domain.service.MetricService;
 import com.helidon.adapter.Mapper;
@@ -30,7 +30,7 @@ public class HelidonWebserver {
     MetricService metricService = new MetricService(repository, repository);
     CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricService, mapper);
     ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(metricService);
-    RecentReportshandler recentReportshandler = new RecentReportshandler(metricService);
+    RecentReportsHandler recentReportshandler = new RecentReportsHandler(metricService);
 
     DelegatingService delegatingService =
         new DelegatingService(createMetricsHandler, reportTimespanHandler,recentReportshandler);

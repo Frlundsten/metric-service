@@ -4,7 +4,8 @@ public class DatabaseInsertException extends RuntimeException {
   public DatabaseInsertException(String message) {
     super(message);
   }
-  public DatabaseInsertException(String message,Throwable cause) {
-    super(message,cause);
+
+  public DatabaseInsertException(String message, Throwable cause) {
+    super(message, cause);
   }
 }
