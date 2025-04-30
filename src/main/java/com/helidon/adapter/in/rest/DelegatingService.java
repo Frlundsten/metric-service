@@ -7,10 +7,10 @@ public class DelegatingService implements HttpService {
 
   private final CreateMetricsHandler metricsHandler;
   private final ReportTimespanHandler getMetricsHandler;
-  private final RecentReportshandler recentReportsHandler;
+  private final RecentReportsHandler recentReportsHandler;
 
   public DelegatingService(
-          CreateMetricsHandler metricsHandler, ReportTimespanHandler getMetricsHandler, RecentReportshandler recentReportsHandler) {
+          CreateMetricsHandler metricsHandler, ReportTimespanHandler getMetricsHandler, RecentReportsHandler recentReportsHandler) {
     this.metricsHandler = metricsHandler;
     this.getMetricsHandler = getMetricsHandler;
     this.recentReportsHandler = recentReportsHandler;

@@ -13,11 +13,11 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RecentReportshandler implements Handler {
+public class RecentReportsHandler implements Handler {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ForManagingMetrics manage;
 
-  public RecentReportshandler(ForManagingMetrics manage) {
+  public RecentReportsHandler(ForManagingMetrics manage) {
     this.manage = manage;
   }
 

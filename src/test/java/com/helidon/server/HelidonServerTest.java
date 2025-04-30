@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
-import com.helidon.adapter.in.rest.RecentReportshandler;
+import com.helidon.adapter.in.rest.RecentReportsHandler;
 import com.helidon.adapter.in.rest.ReportTimespanHandler;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import com.helidon.application.port.in.manage.ForManagingMetrics;
@@ -41,7 +41,7 @@ class HelidonServerTest {
     ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(mock(ForManagingMetrics.class));
     CreateMetricsHandler createMetricsHandler =
         new CreateMetricsHandler(mock(ForCreateMetrics.class), mock(Mapper.class));
-    RecentReportshandler recentReportsHandler = new RecentReportshandler(mock(ForManagingMetrics.class));
+    RecentReportsHandler recentReportsHandler = new RecentReportsHandler(mock(ForManagingMetrics.class));
     var fooService = new DelegatingService(createMetricsHandler, reportTimespanHandler,recentReportsHandler);
     fooService.routing(builder);
   }
