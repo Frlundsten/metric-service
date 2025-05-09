@@ -1,7 +1,6 @@
 package com.helidon.application.port.in.manage;
 
 import com.helidon.application.domain.model.MetricReport;
-
 import java.time.Instant;
 import java.util.List;
 
@@ -30,4 +29,14 @@ public interface ForManagingMetrics {
    * @return List of metric reports.
    */
   List<MetricReport> getRecent();
+
+  /**
+   * Get metric value from a specific timespan
+   *
+   * @param name Name of field
+   * @param start Inclusive
+   * @param end Exclusive
+   * @return List of metric values
+   */
+  List<MetricReport> getSpecificMetric(String name, Instant start, Instant end);
 }
