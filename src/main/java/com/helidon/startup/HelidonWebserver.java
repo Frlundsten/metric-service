@@ -5,7 +5,7 @@ import com.helidon.adapter.common.MetricReportTypeMapperProvider;
 import com.helidon.adapter.common.MetricTypeMapperProvider;
 import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
-import com.helidon.adapter.in.rest.RecentReportsHandler;
+import com.helidon.adapter.in.rest.RecentReportshandler;
 import com.helidon.adapter.in.rest.ReportTimespanHandler;
 import com.helidon.adapter.out.mail.MailSender;
 import com.helidon.adapter.out.persistence.MetricJDBCRepository;
