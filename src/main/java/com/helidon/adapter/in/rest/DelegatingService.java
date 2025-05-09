@@ -10,7 +10,9 @@ public class DelegatingService implements HttpService {
   private final RecentReportsHandler recentReportsHandler;
 
   public DelegatingService(
-          CreateMetricsHandler metricsHandler, ReportTimespanHandler getMetricsHandler, RecentReportsHandler recentReportsHandler) {
+      CreateMetricsHandler metricsHandler,
+      ReportTimespanHandler getMetricsHandler,
+      RecentReportsHandler recentReportsHandler) {
     this.metricsHandler = metricsHandler;
     this.getMetricsHandler = getMetricsHandler;
     this.recentReportsHandler = recentReportsHandler;
@@ -18,6 +20,9 @@ public class DelegatingService implements HttpService {
 
   @Override
   public void routing(HttpRules rules) {
-    rules.post(metricsHandler).get("/recent", recentReportsHandler).get(getMetricsHandler);
+    rules
+            .post(metricsHandler)
+            .get("/recent", recentReportsHandler)
+            .get(getMetricsHandler);
   }
 }

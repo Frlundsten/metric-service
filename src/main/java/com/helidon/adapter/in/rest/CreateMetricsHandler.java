@@ -1,7 +1,7 @@
 package com.helidon.adapter.in.rest;
 
-import com.helidon.adapter.Mapper;
-import com.helidon.adapter.RepositoryId;
+import com.helidon.adapter.common.Mapper;
+import com.helidon.adapter.common.RepositoryId;
 import com.helidon.adapter.in.rest.dto.request.MetricReportRequestDTO;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import io.helidon.http.HeaderNames;
@@ -37,6 +37,7 @@ public class CreateMetricsHandler implements Handler {
                 res.status(201).send(response);
               });
     } catch (NoSuchElementException e) {
+      LOG.error("Missing header", e);
       res.status(400).send("No header");
     } catch (JacksonRuntimeException e) {
       LOG.error("Invalid request body", e);

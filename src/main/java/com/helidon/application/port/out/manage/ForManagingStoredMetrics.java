@@ -30,4 +30,14 @@ public interface ForManagingStoredMetrics {
    * @return a list of {@link MetricReport} objects containing the metric reports.
    */
   List<MetricReport> getRecentFromView();
+
+  /**
+   * Get metric value from a specific timespan
+   *
+   * @param name Name of the metric
+   * @param start Inclusive
+   * @param end Exclusive
+   * @return List of metrics
+   */
+  List<MetricReport> getBetweenDates(String name, Instant start, Instant end);
 }
