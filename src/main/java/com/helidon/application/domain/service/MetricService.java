@@ -38,4 +38,9 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
   public List<MetricReport> getRecent() {
     return manageStoredMetrics.getRecentFromView();
   }
+
+  @Override
+  public List<MetricReport> getSpecificMetric(String name, Instant start, Instant end) {
+    return manageStoredMetrics.getBetweenDates(name, start, end);
+  }
 }

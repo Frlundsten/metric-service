@@ -1,6 +1,6 @@
 package com.helidon;
 
-import com.helidon.adapter.RepositoryId;
+import com.helidon.adapter.common.RepositoryId;
 import com.helidon.exception.ProvidedScopeException;
 
 
