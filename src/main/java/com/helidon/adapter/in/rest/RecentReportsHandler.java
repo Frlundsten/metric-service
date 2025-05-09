@@ -1,6 +1,6 @@
 package com.helidon.adapter.in.rest;
 
-import com.helidon.adapter.RepositoryId;
+import com.helidon.adapter.common.RepositoryId;
 import com.helidon.adapter.in.rest.dto.response.MetricReportResponseDTO;
 import com.helidon.application.port.in.manage.ForManagingMetrics;
 import io.helidon.http.HeaderNames;
