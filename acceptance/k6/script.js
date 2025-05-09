@@ -3,9 +3,9 @@ import { sleep } from 'k6';
 
 export const options = {
     stages: [
-        { duration: '10s', target: 1000 },
-        { duration: '10s', target: 2000 },
-        { duration: '10s', target: 0 },
+        { duration: '3s', target: 10 },
+        { duration: '4s', target: 50 },
+        { duration: '3s', target: 0 },
     ],
     thresholds: {
         http_req_duration: ['p(95)<200'], // 95% of requests should complete below 200ms
@@ -27,10 +27,10 @@ export default function () {
     sleep(1);
 }
 
-// export function handleSummary(data) {
+export function handleSummary(data) {
 //         console.log(JSON.stringify(data));
-//     return {
-//         // 'summary.json': JSON.stringify(data), //the default data object
+    return {
+        'summary.json': JSON.stringify(data), //the default data object
 //         // http.post('http://localhost:8080/hello', data),
-//     };
-// }
+    };
+}
