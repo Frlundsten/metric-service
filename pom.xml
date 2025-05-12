@@ -68,10 +68,6 @@
             <artifactId>helidon-http-media-jackson</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.helidon.http.media</groupId>
-            <artifactId>helidon-http-media-jsonb</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.helidon.webserver.testing.junit5</groupId>
             <artifactId>helidon-webserver-testing-junit5</artifactId>
             <scope>test</scope>
@@ -115,12 +111,6 @@
             <version>${version.junit}</version>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${version.junit}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${version.assertj}</version>
@@ -133,6 +123,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -153,7 +144,6 @@
                 <version>3.5.3</version>
                 <configuration>
                     <argLine>
-                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${version.mockito.core}/mockito-core-${version.mockito.core}.jar
                         --enable-preview
                     </argLine>
                 </configuration>
