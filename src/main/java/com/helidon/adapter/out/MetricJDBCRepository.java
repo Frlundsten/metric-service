@@ -2,9 +2,10 @@ package com.helidon.adapter.out;
 
 import static com.helidon.adapter.out.entity.MetricReportEntity.*;
 
-import com.helidon.adapter.RepositoryId;
+import com.helidon.adapter.common.RepositoryId;
 import com.helidon.adapter.out.entity.MetricEntity;
 import com.helidon.adapter.out.entity.MetricReportEntity;
+import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.MetricReport;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
@@ -42,9 +43,11 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
 
     String reportSql = "INSERT INTO metric_report VALUES (?::UUID, ?::JSON, ?, ?)";
     String metricSql = "INSERT INTO metric VALUES (?::UUID, ?, ?::UUID, ?, ?::JSONB)";
+    String updateView = "REFRESH MATERIALIZED VIEW mv_recent_metrics";
     var connection = dbClient.unwrap(Connection.class);
     try {
       structuredInsert(connection, reportSql, metricSql, metricReportEntity);
+      dbClient.execute().createDmlStatement(updateView).execute();
     } catch (Exception e) {
       throw new DatabaseInsertException("Failed to insert report: " + metricReportEntity, e);
     }
@@ -56,9 +59,12 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       String metricSql,
       MetricReportEntity metricReportEntity)
       throws SQLException {
+
     var repoID = RepositoryId.getScopedValue().value();
+
     try (var reportStmt = connection.prepareStatement(reportSql);
         var metricStmt = connection.prepareStatement(metricSql)) {
+
       connection.setAutoCommit(false);
 
       reportStmt.setObject(1, metricReportEntity.id());
@@ -93,14 +99,16 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       throw new DatabaseInsertException("Failed to insert report: " + metricReportEntity, e);
     } finally {
       connection.close();
-      LOG.debug("Closed db connection");
+      LOG.debug("Closed the db connection");
     }
   }
 
   private boolean hasFailedRows(int[] metricRows) {
+    if (metricRows == null || metricRows.length == 0) {
+      return true;
+    }
     return Arrays.stream(metricRows).anyMatch(rows -> rows != 1);
   }
-
   @Override
   public MetricReport get(String id) {
     return null;
@@ -192,5 +200,49 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
       LOG.error("Something went wrong", e);
     }
     return List.of();
+  }
+
+  @Override
+  public List<MetricReport> getBetweenDates(String name, Instant start, Instant end) {
+    String sql =
+        "SELECT mr.*, m.name, m.type, m.values FROM metric_report mr JOIN metric m ON m.metric_report_id = mr.id WHERE m.name = ? AND mr.repository_id = ? AND mr.created_at > ? AND mr.created_at <= ? ORDER BY mr.created_at;";
+    var repoId = RepositoryId.getScopedValue().value();
+    try {
+      var listOfEntities =
+          dbClient
+              .execute()
+              .createQuery(sql)
+              .params(name, repoId, Timestamp.from(start), Timestamp.from(end))
+              .execute()
+              .map(it -> it.as(MetricReportEntity.class))
+              .toList();
+
+      return listOfEntities.stream().map(MetricReportEntity::toDomain).toList();
+    } catch (Exception e) {
+      LOG.error("Something went wrong", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public List<MetricReport> getMetricFromRecentRuns(Metric metric, int count) {
+    var repoId = RepositoryId.getScopedValue().value();
+    try {
+      var listOfEntities =
+          dbClient
+              .execute()
+              .createNamedQuery("get-metric-from-recent-runs")
+              .params(metric.name().value(), repoId, count)
+              .execute()
+              .map(it -> it.as(MetricReportEntity.class))
+              .toList();
+
+      return listOfEntities.isEmpty()
+          ? List.of()
+          : listOfEntities.stream().map(MetricReportEntity::toDomain).toList();
+    } catch (Exception e) {
+      LOG.error("Something went wrong", e);
+      throw e;
+    }
   }
 }

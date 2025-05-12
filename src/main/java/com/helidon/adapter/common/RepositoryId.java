@@ -1,11 +1,14 @@
-package com.helidon.adapter;
+package com.helidon.adapter.common;
+
+import java.util.Objects;
 
 public record RepositoryId(String value) {
   public static final ScopedValue<RepositoryId> REPOSITORY_ID = ScopedValue.newInstance();
 
   public RepositoryId {
-    if (value == null) {
-      throw new IllegalArgumentException("Repository id cannot be null");
+    Objects.requireNonNull(value, "Repository id cannot be null");
+    if (value.isEmpty()) {
+      throw new IllegalArgumentException("Repository id cannot be empty");
     }
   }
 

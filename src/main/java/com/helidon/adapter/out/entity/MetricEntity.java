@@ -1,6 +1,6 @@
 package com.helidon.adapter.out.entity;
 
-import static com.helidon.adapter.Mapper.valueFromType;
+import static com.helidon.adapter.common.Mapper.valueFromType;
 
 import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;

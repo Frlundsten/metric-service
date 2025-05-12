@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+html, body, #app {
+    height: 100%;
+    width: 100%;
+}
+
+h1, h2{
+    font-family: 'Agency FB', 'Montserrat', 'Roboto','Sans Serif Collection', serif;
+}
+
+h3, h4, p {
+    font-family: Roboto, 'Sans Serif Collection', serif;
+}
+
+
+@media (min-width: 768px) {
+    h1, h2 {
+        font-size: 2rem;
+    }
+
+    h3, h4 {
+        font-size: 1.5rem;
+    }
+
+ p {
+     font-size: 1rem;
+ }
+}

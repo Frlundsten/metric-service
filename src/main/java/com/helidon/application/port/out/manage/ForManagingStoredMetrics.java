@@ -1,5 +1,6 @@
 package com.helidon.application.port.out.manage;
 
+import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.MetricReport;
 
 import java.time.Instant;
@@ -30,4 +31,21 @@ public interface ForManagingStoredMetrics {
    * @return a list of {@link MetricReport} objects containing the metric reports.
    */
   List<MetricReport> getRecentFromView();
+
+  /**
+   * Get metric value from a specific timespan
+   *
+   * @param name Name of the metric
+   * @param start Inclusive
+   * @param end Exclusive
+   * @return List of metrics
+   */
+  List<MetricReport> getBetweenDates(String name, Instant start, Instant end);
+
+  /**
+   * Retrieves the data for a specific metric from the most recent test runs.
+   * @param metric the metric to retrieve data for (e.g., "http_req_duration")
+   * @param count the number of most recent runs to include in the result
+   */
+    List<MetricReport> getMetricFromRecentRuns(Metric metric, int count);
 }
