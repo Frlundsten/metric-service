@@ -21,3 +21,11 @@ db:
     insert-metric: "INSERT INTO metric VALUES (?::UUID, ?, ?::UUID, ?, ?::JSONB)"
     get-between-dates: "SELECT metric_report.id AS report_id, metric_report.created_at AS created_at, metric.id AS metric_id, name, type, values FROM metric JOIN metric_report ON metric.metric_report_id = metric_report.id WHERE repository_id = ? AND created_at BETWEEN ? AND ?"
     view-last-thirty-days: "SELECT * FROM mv_recent_metrics WHERE repo_id = ?"
+    get-metric-from-recent-runs: "SELECT r.*, m.name, m.type, m.values FROM metric m JOIN metric_report r ON m.metric_report_id = r.id WHERE m.name = ? AND r.repository_id = ? ORDER BY r.created_at DESC LIMIT ?"
+
+alarm:
+  http:
+    duration:
+      timespan: 2
+      increase:
+        threshold: 3

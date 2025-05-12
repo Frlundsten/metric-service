@@ -5,6 +5,7 @@ import static com.helidon.adapter.out.entity.MetricReportEntity.*;
 import com.helidon.adapter.common.RepositoryId;
 import com.helidon.adapter.out.entity.MetricEntity;
 import com.helidon.adapter.out.entity.MetricReportEntity;
+import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.MetricReport;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
@@ -103,9 +104,11 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
   }
 
   private boolean hasFailedRows(int[] metricRows) {
+    if (metricRows == null || metricRows.length == 0) {
+      return true;
+    }
     return Arrays.stream(metricRows).anyMatch(rows -> rows != 1);
   }
-
   @Override
   public MetricReport get(String id) {
     return null;
@@ -214,11 +217,32 @@ public class MetricJDBCRepository implements ForPersistingMetrics, ForManagingSt
               .map(it -> it.as(MetricReportEntity.class))
               .toList();
 
-      System.out.println(listOfEntities);
       return listOfEntities.stream().map(MetricReportEntity::toDomain).toList();
     } catch (Exception e) {
       LOG.error("Something went wrong", e);
       throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public List<MetricReport> getMetricFromRecentRuns(Metric metric, int count) {
+    var repoId = RepositoryId.getScopedValue().value();
+    try {
+      var listOfEntities =
+          dbClient
+              .execute()
+              .createNamedQuery("get-metric-from-recent-runs")
+              .params(metric.name().value(), repoId, count)
+              .execute()
+              .map(it -> it.as(MetricReportEntity.class))
+              .toList();
+
+      return listOfEntities.isEmpty()
+          ? List.of()
+          : listOfEntities.stream().map(MetricReportEntity::toDomain).toList();
+    } catch (Exception e) {
+      LOG.error("Something went wrong", e);
+      throw e;
     }
   }
 }

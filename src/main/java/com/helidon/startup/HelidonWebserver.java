@@ -2,12 +2,14 @@ package com.helidon.startup;
 
 import com.helidon.adapter.common.Mapper;
 import com.helidon.adapter.common.MetricReportTypeMapperProvider;
+import com.helidon.adapter.common.MetricTypeMapperProvider;
 import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
-import com.helidon.adapter.in.rest.RecentReportshandler;
+import com.helidon.adapter.in.rest.RecentReportsHandler;
 import com.helidon.adapter.in.rest.ReportTimespanHandler;
 import com.helidon.adapter.out.MetricJDBCRepository;
 import com.helidon.application.domain.service.MetricService;
+import io.helidon.common.context.Context;
 import io.helidon.config.Config;
 import io.helidon.dbclient.DbClient;
 import io.helidon.webserver.WebServer;
@@ -28,6 +30,7 @@ public class HelidonWebserver {
     DbClient client =
         DbClient.builder(config.get("db"))
             .mapperProvider(new MetricReportTypeMapperProvider())
+            .mapperProvider(new MetricTypeMapperProvider())
             .build();
 
     DelegatingService delegatingService = getDelegatingService(client, mapper);
@@ -50,8 +53,8 @@ public class HelidonWebserver {
     MetricService metricService = new MetricService(repository, repository);
     CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricService, mapper);
     ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(metricService);
-    RecentReportshandler recentReportshandler = new RecentReportshandler(metricService);
+    RecentReportsHandler recentReportshandler = new RecentReportsHandler(metricService);
 
-      return new DelegatingService(createMetricsHandler, reportTimespanHandler,recentReportshandler);
+    return new DelegatingService(createMetricsHandler, reportTimespanHandler, recentReportshandler);
   }
 }
