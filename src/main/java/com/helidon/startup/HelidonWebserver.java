@@ -7,9 +7,10 @@ import com.helidon.adapter.in.rest.CreateMetricsHandler;
 import com.helidon.adapter.in.rest.DelegatingService;
 import com.helidon.adapter.in.rest.RecentReportsHandler;
 import com.helidon.adapter.in.rest.ReportTimespanHandler;
-import com.helidon.adapter.out.MetricJDBCRepository;
+import com.helidon.adapter.out.mail.MailSender;
+import com.helidon.adapter.out.persistence.MetricJDBCRepository;
 import com.helidon.application.domain.service.MetricService;
-import io.helidon.common.context.Context;
+import com.helidon.application.port.out.create.ForAlertingUser;
 import io.helidon.config.Config;
 import io.helidon.dbclient.DbClient;
 import io.helidon.webserver.WebServer;
@@ -26,7 +27,6 @@ public class HelidonWebserver {
   public static void setup() {
     Config config = Config.create();
     Mapper mapper = new Mapper();
-
     DbClient client =
         DbClient.builder(config.get("db"))
             .mapperProvider(new MetricReportTypeMapperProvider())
@@ -50,11 +50,13 @@ public class HelidonWebserver {
 
   private static DelegatingService getDelegatingService(DbClient client, Mapper mapper) {
     MetricJDBCRepository repository = new MetricJDBCRepository(client);
-    MetricService metricService = new MetricService(repository, repository);
+    ForAlertingUser alertUser = new MailSender();
+    MetricService metricService = new MetricService(repository, repository, alertUser);
     CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(metricService, mapper);
     ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(metricService);
     RecentReportsHandler recentReportshandler = new RecentReportsHandler(metricService);
 
     return new DelegatingService(createMetricsHandler, reportTimespanHandler, recentReportshandler);
   }
+
 }

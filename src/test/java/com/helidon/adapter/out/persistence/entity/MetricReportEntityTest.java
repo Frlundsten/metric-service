@@ -1,4 +1,4 @@
-package com.helidon.adapter.out.entity;
+package com.helidon.adapter.out.persistence.entity;
 
 import static com.helidon.MetricFactory.createMetricEntity;
 import static org.junit.jupiter.api.Assertions.assertEquals;

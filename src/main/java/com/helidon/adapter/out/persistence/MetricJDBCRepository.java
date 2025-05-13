@@ -1,10 +1,10 @@
-package com.helidon.adapter.out;
+package com.helidon.adapter.out.persistence;
 
-import static com.helidon.adapter.out.entity.MetricReportEntity.*;
+import static com.helidon.adapter.out.persistence.entity.MetricReportEntity.*;
 
 import com.helidon.adapter.common.RepositoryId;
-import com.helidon.adapter.out.entity.MetricEntity;
-import com.helidon.adapter.out.entity.MetricReportEntity;
+import com.helidon.adapter.out.persistence.entity.MetricEntity;
+import com.helidon.adapter.out.persistence.entity.MetricReportEntity;
 import com.helidon.application.domain.model.Metric;
 import com.helidon.application.domain.model.MetricReport;
 import com.helidon.application.port.out.create.ForPersistingMetrics;

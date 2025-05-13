@@ -1,7 +1,7 @@
 package com.helidon;
 
-import com.helidon.adapter.out.entity.MetricEntity;
-import com.helidon.adapter.out.entity.MetricReportEntity;
+import com.helidon.adapter.out.persistence.entity.MetricEntity;
+import com.helidon.adapter.out.persistence.entity.MetricReportEntity;
 import com.helidon.application.domain.model.CounterValues;
 import com.helidon.application.domain.model.K6Type;
 import com.helidon.application.domain.model.Metric;

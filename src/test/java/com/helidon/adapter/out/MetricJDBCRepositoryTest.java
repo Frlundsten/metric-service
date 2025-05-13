@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.junit.jupiter.params.provider.Arguments.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.helidon.MetricFactory;
+import com.helidon.adapter.out.persistence.MetricJDBCRepository;
 import com.helidon.application.domain.model.MetricReport;
 import com.helidon.exception.EmptyMetricListException;
 import io.helidon.dbclient.DbClient;
@@ -43,8 +45,10 @@ class MetricJDBCRepositoryTest {
   private static DbStatementDml dbStatementReport;
   private static DbStatementQuery dbStatementQuery;
   private static Connection conn;
-  private static String reportSql = "INSERT INTO metric_report VALUES (?::UUID, ?::JSON, ?, ?)";
-  private static String metricSql = "INSERT INTO metric VALUES (?::UUID, ?, ?::UUID, ?, ?::JSONB)";
+  private static final String reportSql =
+      "INSERT INTO metric_report VALUES (?::UUID, ?::JSON, ?, ?)";
+  private static final String metricSql =
+      "INSERT INTO metric VALUES (?::UUID, ?, ?::UUID, ?, ?::JSONB)";
   private static PreparedStatement stmtReport;
   private static PreparedStatement stmtEntity;
 
@@ -78,13 +82,16 @@ class MetricJDBCRepositoryTest {
   void shouldNotThrowExceptionWhenSavingValidData() throws SQLException {
     MetricReport metricReport = createMetricReport();
 
+    DbExecute execute = mock(DbExecute.class);
+    when(dbClient.execute()).thenReturn(execute);
+    when(execute.createDmlStatement(anyString())).thenReturn(dbStatement);
     when(conn.prepareStatement(reportSql)).thenReturn(stmtReport);
     when(conn.prepareStatement(metricSql)).thenReturn(stmtEntity);
     when(dbClient.unwrap(Connection.class)).thenReturn(conn);
     when(stmtEntity.executeBatch()).thenReturn(new int[] {1});
     when(stmtReport.executeUpdate()).thenReturn(1);
 
-    withScope(() -> repository.saveMetrics(metricReport));
+    assertThatNoException().isThrownBy(() -> withScope(() -> repository.saveMetrics(metricReport)));
 
     verify(conn).commit();
     verify(stmtEntity).executeBatch();

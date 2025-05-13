@@ -1,7 +1,7 @@
 package com.helidon.adapter.common;
 
-import com.helidon.adapter.out.entity.MetricEntity;
-import com.helidon.adapter.out.entity.MetricReportEntity;
+import com.helidon.adapter.out.persistence.entity.MetricEntity;
+import com.helidon.adapter.out.persistence.entity.MetricReportEntity;
 import io.helidon.dbclient.DbColumn;
 import io.helidon.dbclient.DbMapper;
 import io.helidon.dbclient.DbRow;

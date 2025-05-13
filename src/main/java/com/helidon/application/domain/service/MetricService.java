@@ -3,6 +3,7 @@ package com.helidon.application.domain.service;
 import com.helidon.application.domain.model.MetricReport;
 import com.helidon.application.port.in.create.ForCreateMetrics;
 import com.helidon.application.port.in.manage.ForManagingMetrics;
+import com.helidon.application.port.out.create.ForAlertingUser;
 import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
 import java.time.Instant;
@@ -12,16 +13,34 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
 
   private final ForPersistingMetrics persistingMetrics;
   private final ForManagingStoredMetrics manageStoredMetrics;
+  private final AlarmService alarmService;
 
   public MetricService(
-      ForPersistingMetrics persistingMetrics, ForManagingStoredMetrics manageStoredMetrics) {
+      ForPersistingMetrics persistingMetrics, ForManagingStoredMetrics manageStoredMetrics, ForAlertingUser alertingUser) {
     this.persistingMetrics = persistingMetrics;
     this.manageStoredMetrics = manageStoredMetrics;
+    this.alarmService = new AlarmService(alertingUser);
   }
 
   @Override
   public void saveMetrics(MetricReport metricReport) {
-    persistingMetrics.saveMetrics(metricReport);
+            persistingMetrics.saveMetrics(metricReport);
+            checkAlarms(metricReport);
+  }
+
+  private void checkAlarms(MetricReport metricReport) {
+    var reqDuration =
+        metricReport.metricList().stream()
+            .filter(metric -> metric.name().value().equals("http_req_duration"))
+            .findFirst();
+
+    if (reqDuration.isEmpty()) {
+      return;
+    }
+
+    var recent = manageStoredMetrics.getMetricFromRecentRuns(reqDuration.get(), 5);
+
+    alarmService.check(recent, reqDuration.get());
   }
 
   @Override

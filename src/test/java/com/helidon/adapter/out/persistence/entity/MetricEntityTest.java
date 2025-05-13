@@ -1,4 +1,4 @@
-package com.helidon.adapter.out.entity;
+package com.helidon.adapter.out.persistence.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
