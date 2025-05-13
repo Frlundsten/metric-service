@@ -1,17 +1,17 @@
 package com.helidon.application.domain.service;
 
-import static org.assertj.core.api.Assertions.assertThatException;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.helidon.application.domain.model.*;
 import com.helidon.application.port.out.create.ForAlertingUser;
-import com.helidon.exception.TrendViolationException;
+import io.helidon.config.Config;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import io.helidon.config.Config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ class AlarmServiceTest {
   }
 
   @Test
-  void shouldThrowExceptionWhenIncreasingOverTime() {
+  void shouldAlertUserWhenIncreasingOverTime() {
     var reports = new ArrayList<MetricReport>();
     var currentMetric =
         new Metric(
@@ -50,9 +50,9 @@ class AlarmServiceTest {
                       new TrendValues(44.00, 0.50, 1.37, 1.24, p95, 110.10)))));
     }
 
-    assertThatException()
-        .isThrownBy(() -> alarmService.check(reports, currentMetric))
-        .isInstanceOf(TrendViolationException.class)
-        .withMessage("The trend has consistently increased over the past 5 periods");
+    assertThatNoException().isThrownBy(() -> alarmService.check(reports, currentMetric));
+
+    verify(forAlertingUser, times(1))
+        .sendAlert("The trend has consistently increased over the past 5 periods", reports);
   }
 }
