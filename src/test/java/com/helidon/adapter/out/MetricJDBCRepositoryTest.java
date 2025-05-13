@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.helidon.MetricFactory;
+import com.helidon.adapter.out.persistence.MetricJDBCRepository;
 import com.helidon.application.domain.model.MetricReport;
 import com.helidon.exception.EmptyMetricListException;
 import io.helidon.dbclient.DbClient;

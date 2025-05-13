@@ -26,6 +26,6 @@ db:
 alarm:
   http:
     duration:
-      timespan: 2
+      span: 5
       increase:
         threshold: 3
