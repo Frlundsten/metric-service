@@ -39,16 +39,19 @@ public class AlarmService {
       LOG.debug("Alarm check passed");
     } catch (TrendViolationException e) {
       LOG.warn("Alarm check failed", e);
-      alertUser.sendAlert(e.getMessage(),recent);
+      alertUser.sendAlert(e.getMessage(), recent);
     }
   }
 
   private void checkTrend(List<TrendValues> trendList) {
-    if (trendList.size() < 2) {
+    if (trendList.size() <= 2) {
       return;
     }
-    for (int i = 0; i < REQ_DURATION_SPAN; i++) {
-      if (trendList.get(i).p95() > trendList.get(i + 1).p95()) {
+
+    int maxComparisons = Math.min(trendList.size() - 1, REQ_DURATION_SPAN);
+
+    for (int i = 0; i < maxComparisons; i++) {
+      if (trendList.get(i).p95() >= trendList.get(i + 1).p95()) {
         return;
       }
     }

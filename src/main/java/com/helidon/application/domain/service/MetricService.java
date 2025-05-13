@@ -8,7 +8,6 @@ import com.helidon.application.port.out.create.ForPersistingMetrics;
 import com.helidon.application.port.out.manage.ForManagingStoredMetrics;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.StructuredTaskScope;
 
 public class MetricService implements ForCreateMetrics, ForManagingMetrics {
 
@@ -25,18 +24,8 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
 
   @Override
   public void saveMetrics(MetricReport metricReport) {
-    try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-      scope.fork(
-          () -> {
             persistingMetrics.saveMetrics(metricReport);
-            return null;
-          });
-      scope.fork(
-          () -> {
             checkAlarms(metricReport);
-            return null;
-          });
-    }
   }
 
   private void checkAlarms(MetricReport metricReport) {
@@ -48,6 +37,7 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
     if (reqDuration.isEmpty()) {
       return;
     }
+
     var recent = manageStoredMetrics.getMetricFromRecentRuns(reqDuration.get(), 5);
 
     alarmService.check(recent, reqDuration.get());
