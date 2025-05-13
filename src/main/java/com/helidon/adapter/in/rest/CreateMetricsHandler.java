@@ -18,7 +18,8 @@ public class CreateMetricsHandler implements Handler {
   private final ForCreateMetrics metricsCreation;
   private final Mapper mapper;
 
-  public CreateMetricsHandler(ForCreateMetrics metricsCreation, Mapper mapper) {
+  public CreateMetricsHandler(
+      ForCreateMetrics metricsCreation, Mapper mapper) {
     this.metricsCreation = metricsCreation;
     this.mapper = mapper;
   }

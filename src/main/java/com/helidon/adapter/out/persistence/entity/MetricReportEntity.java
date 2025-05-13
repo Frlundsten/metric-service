@@ -1,4 +1,4 @@
-package com.helidon.adapter.out.entity;
+package com.helidon.adapter.out.persistence.entity;
 
 import static com.helidon.adapter.common.Mapper.toJson;
 import static com.helidon.adapter.common.Mapper.valueFromType;
