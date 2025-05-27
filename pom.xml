@@ -180,7 +180,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.helidon.startup.Main</mainClass>
+                            <mainClass>com.fl.startup.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import com.fl.adapter.out.persistence.entity.MetricEntity;
+import com.fl.adapter.out.persistence.entity.MetricReportEntity;
 import org.junit.jupiter.api.Test;
 
 class MetricReportEntityTest {
