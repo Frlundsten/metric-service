@@ -2,10 +2,10 @@ package com.helidon.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.helidon.adapter.common.Mapper;
-import com.helidon.adapter.in.rest.dto.TrendValuesDTO;
-import com.helidon.adapter.in.rest.dto.request.MetricRequestDTO;
-import com.helidon.application.domain.model.MetricReport;
+import com.fl.adapter.common.Mapper;
+import com.fl.adapter.in.rest.dto.TrendValuesDTO;
+import com.fl.adapter.in.rest.dto.request.MetricRequestDTO;
+import com.fl.application.domain.model.MetricReport;
 
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;

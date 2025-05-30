@@ -1,7 +1,7 @@
 package com.helidon;
 
-import com.helidon.adapter.common.RepositoryId;
-import com.helidon.exception.ProvidedScopeException;
+import com.fl.adapter.common.RepositoryId;
+import com.fl.exception.ProvidedScopeException;
 
 
 // Provide scoped value for tests

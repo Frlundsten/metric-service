@@ -2,6 +2,7 @@ package com.helidon.adapter.out.persistence.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fl.adapter.out.persistence.entity.MetricEntity;
 import org.junit.jupiter.api.Test;
 
 class MetricEntityTest {

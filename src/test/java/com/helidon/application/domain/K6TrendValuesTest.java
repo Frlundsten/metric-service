@@ -2,7 +2,7 @@ package com.helidon.application.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.helidon.adapter.in.rest.dto.TrendValuesDTO;
+import com.fl.adapter.in.rest.dto.TrendValuesDTO;
 import org.junit.jupiter.api.Test;
 
 class K6TrendValuesTest {
