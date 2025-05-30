@@ -44,7 +44,7 @@ class AlarmServiceTest {
                         P95 has consistently increased over the selected period!
                         Settings used:
                         Iteration increase threshold: 0%
-                        First to last threshold: 10%
+                        First to last threshold: 10% ✅
                         Recent runs span: 5
                         """);
     }

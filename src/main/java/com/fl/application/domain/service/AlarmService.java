@@ -51,9 +51,9 @@ public class AlarmService {
      * The method verifies two conditions:
      * <ul>
      *   <li>Each consecutive p95 value must be greater than the previous by at least a defined threshold (e.g. 5%).</li>
-     *   <li>The overall increase from the first to the last value must exceed a total threshold (e.g. 30%).</li>
+     *   <li>The overall increase from the first to the last value will be validated.</li>
      * </ul>
-     * If both conditions are met over the specified number of periods, a {@link TrendViolationException} is thrown.
+     * If first condition is met over the specified number of periods, a {@link TrendViolationException} is thrown.
      *
      * @param p95List List of p95 latency values, ordered from oldest to newest.
      * @throws TrendViolationException if a consistent and significant increase is detected.

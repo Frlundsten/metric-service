@@ -42,7 +42,7 @@ class AlarmServiceTest {
     var latestRuns = config.get("alarm.http.duration.span").asInt().get();
 
     for (int i = 0; i < latestRuns; i++) {
-      double p95 = 100.01 + (i * 10);
+      double p95 = 100.01 - (i * 10);
       reports.add(
           new MetricReport(
               UUID.randomUUID(),
@@ -58,6 +58,12 @@ class AlarmServiceTest {
     assertThatNoException().isThrownBy(() -> alarmService.check(reports, currentMetric));
 
     verify(forAlertingUser, times(1))
-        .sendAlert("The trend has consistently increased over the past 5 periods", reports);
+        .sendAlert("""
+                P95 has consistently increased over the selected period!
+                Settings used:
+                Iteration increase threshold: 0%
+                First to last threshold: 10% ❌
+                Recent runs span: 5
+                """, reports);
   }
 }
