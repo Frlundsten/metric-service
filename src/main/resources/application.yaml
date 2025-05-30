@@ -28,4 +28,12 @@ alarm:
     duration:
       span: 5
       increase:
-        threshold: 3
+        threshold: 0
+        first-to-last: 10
+
+mail:
+  host: "mail host"
+  port: 123
+  user: "username"
+  password: "password"
+  recipient: "recipient@email.com"
