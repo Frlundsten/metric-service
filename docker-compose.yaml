@@ -27,23 +27,23 @@ services:
     depends_on:
       - postgres
 
-#  metric-service:
-#    build:
-#      context: .
-#    environment:
-#      db.connection.url: jdbc:postgresql://postgres-container:5432/helidon
-#      db.connection.username: user
-#      db.connection.password: password
+  metric-service:
+    build:
+      context: .
+    environment:
+      db.connection.url: jdbc:postgresql://postgres-container:5432/helidon
+      db.connection.username: user
+      db.connection.password: password
 #      mail.host:
 #      mail.port:
 #      mail.username:
 #      mail.password:
 #      mail.recipient:
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      liquibase:
-#        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    depends_on:
+      liquibase:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:
