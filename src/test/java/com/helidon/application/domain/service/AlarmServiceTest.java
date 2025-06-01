@@ -11,7 +11,7 @@ import com.fl.application.domain.model.MetricName;
 import com.fl.application.domain.model.MetricReport;
 import com.fl.application.domain.model.TrendValues;
 import com.fl.application.domain.service.AlarmService;
-import com.fl.application.port.out.create.ForAlertingUser;
+import com.fl.application.port.out.notification.ForAlertingUser;
 import io.helidon.config.Config;
 import java.time.Instant;
 import java.util.ArrayList;

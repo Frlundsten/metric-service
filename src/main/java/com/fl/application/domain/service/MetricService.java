@@ -3,7 +3,7 @@ package com.fl.application.domain.service;
 import com.fl.application.domain.model.MetricReport;
 import com.fl.application.port.in.create.ForCreateMetrics;
 import com.fl.application.port.in.manage.ForManagingMetrics;
-import com.fl.application.port.out.create.ForAlertingUser;
+import com.fl.application.port.out.notification.ForAlertingUser;
 import com.fl.application.port.out.create.ForPersistingMetrics;
 import com.fl.application.port.out.manage.ForManagingStoredMetrics;
 import java.time.Instant;

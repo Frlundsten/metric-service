@@ -1,7 +1,7 @@
 package com.fl.adapter.out.mail;
 
 import com.fl.application.domain.model.MetricReport;
-import com.fl.application.port.out.create.ForAlertingUser;
+import com.fl.application.port.out.notification.ForAlertingUser;
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.api.mailer.config.TransportStrategy;

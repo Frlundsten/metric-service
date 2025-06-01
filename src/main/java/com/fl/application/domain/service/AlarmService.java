@@ -3,7 +3,7 @@ package com.fl.application.domain.service;
 import com.fl.application.domain.model.Metric;
 import com.fl.application.domain.model.MetricReport;
 import com.fl.application.domain.model.TrendValues;
-import com.fl.application.port.out.create.ForAlertingUser;
+import com.fl.application.port.out.notification.ForAlertingUser;
 import com.fl.exception.TrendViolationException;
 import io.helidon.config.Config;
 import org.slf4j.Logger;

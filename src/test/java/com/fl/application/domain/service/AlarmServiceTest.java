@@ -1,6 +1,6 @@
 package com.fl.application.domain.service;
 
-import com.fl.application.port.out.create.ForAlertingUser;
+import com.fl.application.port.out.notification.ForAlertingUser;
 import com.fl.exception.TrendViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

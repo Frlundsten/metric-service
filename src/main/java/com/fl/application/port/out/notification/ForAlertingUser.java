@@ -1,4 +1,4 @@
-package com.fl.application.port.out.create;
+package com.fl.application.port.out.notification;
 
 import com.fl.application.domain.model.MetricReport;
 
