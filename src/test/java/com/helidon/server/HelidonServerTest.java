@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fl.adapter.in.rest.AiHandler;
 import com.fl.adapter.in.rest.CreateMetricsHandler;
 import com.fl.adapter.in.rest.DelegatingService;
 import com.fl.adapter.in.rest.RecentReportsHandler;
@@ -39,10 +40,11 @@ class HelidonServerTest {
   @SetUpRoute
   static void routing(HttpRouting.Builder builder) {
     ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(mock(ForManagingMetrics.class));
+    AiHandler aiHandler = mock(AiHandler.class);
     CreateMetricsHandler createMetricsHandler =
         new CreateMetricsHandler(mock(ForCreateMetrics.class), mock(Mapper.class));
     RecentReportsHandler recentReportsHandler = new RecentReportsHandler(mock(ForManagingMetrics.class));
-    var fooService = new DelegatingService(createMetricsHandler, reportTimespanHandler,recentReportsHandler);
+    var fooService = new DelegatingService(createMetricsHandler, reportTimespanHandler,recentReportsHandler, aiHandler);
     fooService.routing(builder);
   }
 
