@@ -16,4 +16,5 @@
     <logger name="com.zaxxer.hikari" level="WARN"/>
     <logger name="io.helidon.dbclient" level="TRACE"/>
     <logger name="javax.management.remote.rmi" level="WARN"/>
+    <logger name="jdk.event.security" level="WARN"/>
 </configuration>
