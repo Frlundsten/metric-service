@@ -16,10 +16,10 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
   private final AlarmService alarmService;
 
   public MetricService(
-      ForPersistingMetrics persistingMetrics, ForManagingStoredMetrics manageStoredMetrics, ForAlertingUser alertingUser) {
+      ForPersistingMetrics persistingMetrics, ForManagingStoredMetrics manageStoredMetrics, AlarmService alarmService) {
     this.persistingMetrics = persistingMetrics;
     this.manageStoredMetrics = manageStoredMetrics;
-    this.alarmService = new AlarmService(alertingUser);
+    this.alarmService = alarmService;
   }
 
   @Override
@@ -40,7 +40,7 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
 
     var recentReports = manageStoredMetrics.getMetricFromRecentRuns(reqDuration.get(), 5);
 
-    alarmService.check(recentReports, reqDuration.get());
+    alarmService.check(recentReports);
   }
 
   @Override
