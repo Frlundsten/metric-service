@@ -1,0 +1,19 @@
+Timestamps are used to determine the order of events. They are usually written in ISO 8601 format, such as:
+
+2025-06-01T16:56:34Z
+
+Here’s how to compare timestamps:
+
+- The year comes first. A timestamp in 2025 is newer than one in 2024.
+- Next is the month. "06" (June) is later than "05" (May).
+- Then comes the day. "02" is later than "01".
+- Then the hour (24-hour format), then minutes, then seconds.
+- "Z" means the time is in UTC.
+
+### Example:
+
+2025-06-01T16:56:33Z is earlier than 2025-06-01T16:56:34Z.
+
+Therefore, when comparing runs:
+- Sort by year, then month, day, hour, minute, second.
+- The latest run is the one with the largest timestamp.
