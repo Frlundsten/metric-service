@@ -28,8 +28,8 @@ public class AlarmService {
         this.alertUser = alertUser;
     }
 
-    public void check(List<MetricReport> recent, Metric current) {
-        LOG.debug("Performing alarm check..");
+    public void check(List<MetricReport> recent) {
+        LOG.debug("Prepare check of p95 values");
         var p95List =
                 recent.stream()
                         .flatMap(
@@ -45,7 +45,6 @@ public class AlarmService {
         }
     }
 
-
     /**
      * Checks if the p95 values show a consistent upward trend.
      * The method verifies two conditions:
@@ -59,6 +58,7 @@ public class AlarmService {
      * @throws TrendViolationException if a consistent and significant increase is detected.
      */
     protected void checkP95Trend(List<Double> p95List) {
+        LOG.debug("Performing alarm check with {} p95 values", p95List.size());
         if (p95List.size() <= 2) {
             return;
         }
