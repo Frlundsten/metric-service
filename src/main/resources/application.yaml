@@ -26,7 +26,7 @@ db:
 alarm:
   http:
     duration:
-      span: 5
+      span: 4
       increase:
         threshold: 0
         first-to-last: 10
@@ -37,3 +37,6 @@ mail:
   user: "username"
   password: "password"
   recipient: "recipient@email.com"
+
+  AI_RUNNER_URL: "http://model-runner.docker.internal/"
+  AI_RUNNER_MODEL: "holder"
