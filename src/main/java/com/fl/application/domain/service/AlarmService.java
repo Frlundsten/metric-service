@@ -1,6 +1,5 @@
 package com.fl.application.domain.service;
 
-import com.fl.application.domain.model.Metric;
 import com.fl.application.domain.model.MetricReport;
 import com.fl.application.domain.model.TrendValues;
 import com.fl.application.port.out.notification.ForAlertingUser;
