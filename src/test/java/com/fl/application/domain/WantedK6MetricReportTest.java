@@ -1,4 +1,4 @@
-package com.helidon.application.domain;
+package com.fl.application.domain;
 
 import com.fl.adapter.in.rest.WantedK6Metrics;
 import org.junit.jupiter.params.ParameterizedTest;

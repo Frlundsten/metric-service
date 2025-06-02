@@ -1,4 +1,4 @@
-package com.helidon.application.domain;
+package com.fl.application.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

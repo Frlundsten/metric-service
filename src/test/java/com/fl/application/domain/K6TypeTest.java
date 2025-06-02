@@ -1,4 +1,4 @@
-package com.helidon.application.domain;
+package com.fl.application.domain;
 
 import static com.fl.application.domain.model.K6Type.COUNTER;
 import static com.fl.application.domain.model.K6Type.GAUGE;
