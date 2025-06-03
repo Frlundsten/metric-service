@@ -3,7 +3,7 @@ package com.fl.startup;
 import com.fl.adapter.common.Mapper;
 import com.fl.adapter.common.MetricReportTypeMapperProvider;
 import com.fl.adapter.common.MetricTypeMapperProvider;
-import com.fl.adapter.in.rest.AiHandler;
+import com.fl.adapter.in.rest.AnalyzeHandler;
 import com.fl.adapter.in.rest.CreateMetricsHandler;
 import com.fl.adapter.in.rest.DelegatingService;
 import com.fl.adapter.in.rest.RecentReportsHandler;
@@ -32,10 +32,7 @@ public class HelidonWebserver {
 
     public static final Logger LOG = LoggerFactory.getLogger(HelidonWebserver.class);
 
-    private HelidonWebserver() {
-    }
-
-    public static void setup() {
+    public void start() {
         Config config = Config.create();
         Mapper mapper = new Mapper();
         DbClient client =
@@ -55,11 +52,11 @@ public class HelidonWebserver {
         LOG.debug("HelidonWebserver started");
     }
 
-    private static HttpRouting.Builder getRouting(DelegatingService delegatingService) {
+    private HttpRouting.Builder getRouting(DelegatingService delegatingService) {
         return HttpRouting.builder().register("/metrics", delegatingService);
     }
 
-    private static DelegatingService getDelegatingService(DbClient client, Mapper mapper, Config config) {
+    private DelegatingService getDelegatingService(DbClient client, Mapper mapper, Config config) {
 
         // Outbound adapters implementing outbound ports (use cases)
         MetricJDBCRepository repository = new MetricJDBCRepository(client);
@@ -88,26 +85,28 @@ public class HelidonWebserver {
         Inbound adapters (application entry points / driving adapters)
         Responsible for handling incoming requests and delegating them to the appropriate use case (port).
          */
-        AiHandler aiHandler = new AiHandler(analyzingData);
+        AnalyzeHandler analyzeHandler = new AnalyzeHandler(analyzingData);
         CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(createMetrics, mapper);
         ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(manageMetrics);
         RecentReportsHandler recentReportshandler = new RecentReportsHandler(manageMetrics);
 
-        return new DelegatingService(createMetricsHandler, reportTimespanHandler, recentReportshandler, aiHandler);
+        return new DelegatingService(createMetricsHandler, reportTimespanHandler, recentReportshandler, analyzeHandler);
     }
 
-    private static ForDataAnalysis setupAiContact(Config config) {
+    private ForDataAnalysis setupAiContact(Config config) {
         var aiUrl = config.get("AI_RUNNER_URL").asString().get();
         var aiModel = config.get("AI_RUNNER_MODEL").asString().get();
+        LOG.debug("Setting up AI analyzer with model ({}) and base url ({})", aiModel, aiUrl);
         return new AiContact(aiUrl, aiModel);
     }
 
-    private static ForAlertingUser setupMailSender(Config config) {
+    private ForAlertingUser setupMailSender(Config config) {
         var mailHost = config.get("mail.host").asString().get(String.class);
         var mailPort = config.get("mail.port").asInt().get(Integer.class);
         var mailUser = config.get("mail.user").asString().get(String.class);
         var mailPassword = config.get("mail.password").asString().get(String.class);
         var recipient = config.get("mail.recipient").asString().get(String.class);
+        LOG.debug("Setting up mail at host ({}) with recipient ({})", mailHost, recipient);
         return new MailSender(mailHost, mailPort, mailUser, mailPassword, recipient);
     }
 
