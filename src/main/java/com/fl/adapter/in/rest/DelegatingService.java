@@ -24,9 +24,9 @@ public class DelegatingService implements HttpService {
     @Override
     public void routing(HttpRules rules) {
         rules
+                .post("/analyze", aiHandler)
                 .post(metricsHandler)
                 .get("/recent", recentReportsHandler)
-                .get("/ai", aiHandler)
                 .get(getMetricsHandler);
     }
 }
