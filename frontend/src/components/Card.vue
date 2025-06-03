@@ -8,13 +8,13 @@ const props = defineProps(['img', 'title', 'description'])
 
 
       <div class="max-w-lg chat chat-start">
-        <p class="w-80 italic chat-bubble chat-bubble-accent">
+        <p class=" sm:w-80 italic chat-bubble chat-bubble-accent">
           Our customer called, they are unable to reach their service. The website is down and they're losing business.
           It seems like our server isn't handling the traffic properly...
         </p>
       </div>
 
-      <h3 class="w-1/2">
+      <h3 class=" w-4/5 sm:w-1/2">
         All those unit tests, integration tests, and end-to-end tests you spent hours crafting. The ones that gave you
         confidence, covered edge cases, and passed with flying colors, are now useless. They
         didn’t catch this.
