@@ -80,9 +80,8 @@ paths:
         200:
           description: All ok
           content:
-            application:json:
-              schema:
-                type: string
+            text/plain:
+              example: The increase in latency is worrying. It's crucial to investigate the cause of the increase to identify any potential issues or bottlenecks.
 
         400:
           description: Bad request
