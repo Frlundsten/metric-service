@@ -12,11 +12,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class AiHandler implements Handler {
-    Logger LOG = LoggerFactory.getLogger(AiHandler.class);
+public class AnalyzeHandler implements Handler {
+    Logger LOG = LoggerFactory.getLogger(AnalyzeHandler.class);
     private final ForAnalyzingData forAnalyzingData;
 
-    public AiHandler(ForAnalyzingData forAnalyzingData) {
+    public AnalyzeHandler(ForAnalyzingData forAnalyzingData) {
         this.forAnalyzingData = forAnalyzingData;
     }
 
