@@ -1,28 +1,58 @@
 package com.fl.adapter.in.rest;
 
 import com.fl.adapter.in.rest.dto.request.AiMetricReportRequest;
-import com.fl.application.port.out.ai.ForContactingAI;
+import com.fl.application.domain.model.K6Type;
+import com.fl.application.port.in.analyze.ForAnalyzingData;
 import io.helidon.common.GenericType;
 import io.helidon.webserver.http.Handler;
 import io.helidon.webserver.http.ServerRequest;
 import io.helidon.webserver.http.ServerResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class AiHandler implements Handler {
-    ForContactingAI forContactingAI;
+    Logger LOG = LoggerFactory.getLogger(AiHandler.class);
+    private final ForAnalyzingData forAnalyzingData;
 
-    public AiHandler(ForContactingAI forContactingAI) {
-        this.forContactingAI = forContactingAI;
+    public AiHandler(ForAnalyzingData forAnalyzingData) {
+        this.forAnalyzingData = forAnalyzingData;
     }
 
     @Override
     public void handle(ServerRequest req, ServerResponse res) {
-        var body = req.content().as(new GenericType<List<AiMetricReportRequest>>(){});
-        System.out.println(body);
-        if (body.isEmpty()) {
-            forContactingAI.analyzeWithAi();
+        LOG.debug("Request to analyze data...");
+        var reportDTOList = req.content().as(new GenericType<List<AiMetricReportRequest>>() {
+        });
+
+        reportDTOList = keepOnlyTrend(reportDTOList);
+
+
+        if (reportDTOList.isEmpty()) {
+            LOG.debug("Analyzing Recent runs");
+            forAnalyzingData.analyzeRecentRuns();
         }
-        forContactingAI.analyzeWithAi(body);
+
+        LOG.debug("Analyzing {} reports", reportDTOList.size());
+        var domainList = reportDTOList.stream()
+                .map(AiMetricReportRequest::toDomain)
+                .toList();
+        var response = forAnalyzingData.analyzeData(domainList);
+
+        res.status(200).send(response);
+    }
+
+    private List<AiMetricReportRequest> keepOnlyTrend(List<AiMetricReportRequest> reportDTOList) {
+        return reportDTOList.stream()
+                .map(report -> new AiMetricReportRequest(
+                        report.id(),
+                        report.timestamp(),
+                        report.metrics().stream()
+                                .filter(metric -> K6Type.TREND.name().equalsIgnoreCase(metric.type()))
+                                .toList()
+                ))
+                .filter(report -> !report.metrics().isEmpty())
+                .toList();
     }
 }
