@@ -14,11 +14,51 @@ This project was created to deepen my understanding of
 
 Clone the repository:
 https://github.com/Frlundsten/metric-service.git
+
 ---
 
+> ⚠️ **Java Version Requirement**  
+> This project requires **Java 24** (a preview version beyond Java 21) to build and run properly.
+>
+> The `pom.xml` specifies the compiler release as `24` and enables preview features with `--enable-preview`.
+>
+> Please ensure you have a JDK that supports Java 24 preview features installed and configured before building or running this project.
+>
+> If you want to run this on Java 21 or earlier, you will need to update the Maven configuration accordingly and remove the preview flags.
+
+---
+## AI
+
+The service doesn't use the Helidon `langchain4j` integration **yet**, but it does include the following dependencies:
+
+```xml
+<dependency>
+    <groupId>dev.langchain4j</groupId>
+    <artifactId>langchain4j-easy-rag</artifactId>
+    <version>1.0.1-beta6</version>
+</dependency>
+<dependency>
+    <groupId>dev.langchain4j</groupId>
+    <artifactId>langchain4j-open-ai</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```
+
+The service provides an endpoint at `metrics/analyze` where the domain service uses an out-port.  
+The adapter for this out-port is a service that leverages AI through the **Docker model runner**.
+
+To use this functionality and prevent errors when calling `metrics/analyze`, you must set up the Docker model runner.
+
+👉 Follow the official Docker documentation here:  
+https://docs.docker.com/model-runner/
+
+> ⚠️ **Docker Model Runner Requirements**  
+> Requires **Docker Desktop for Mac with Apple Silicon**, or **Windows with NVIDIA GPUs**.
+---
+## Mail
 The service has an implemented feature where a mail will be sent if a trendcheck fails.
 The dependency used for this is:
-```yaml 
+```xml 
 <dependency>
     <groupId>org.simplejavamail</groupId>
     <artifactId>simple-java-mail</artifactId>
@@ -29,38 +69,28 @@ To use the mail functionality you would need to register at an email delivery pl
 If you do not provide any mail env values it will default to the applications default values and an exception will be thrown if the ```sendAlert()``` method is called. 
 
 ```yaml
-metric-service:
-  build:
-    context: .
-  environment:
-    db.connection.url: jdbc:postgresql://postgres-container:5432/helidon
-    db.connection.username: user
-    db.connection.password: password
-#    mail.host:
-#    mail.port:
-#    mail.username:
-#    mail.password:
-#    mail.recipient:
-  ports:
-    - "8080:8080"
-  depends_on:
-    liquibase:
-      condition: service_completed_successfully
+  metric-service:
+    build:
+      context: .
+    environment:
+      db.connection.url: jdbc:postgresql://postgres-container:5432/helidon
+      db.connection.username: user
+      db.connection.password: password
+    #      mail.host: 
+    #      mail.port:
+    #      mail.username:
+    #      mail.password:
+    #      mail.recipient:
+    #      AI_RUNNER_MODEL: ai/deepseek-r1-distill-llama:8B-Q4_K_M
+    #      AI_RUNNER_URL: http://model-runner.docker.internal/
+    ports:
+      - "8080:8080"
+    depends_on:
+      liquibase:
+        condition: service_completed_successfully
+      ai-runner:
+        condition: service_started
 ```
----
-
-> ⚠️ **Java Version Requirement**  
-> This project requires **Java 24** (a preview version beyond Java 21) to build and run properly.  
->  
-> The `pom.xml` specifies the compiler release as `24` and enables preview features with `--enable-preview`.  
->  
-> Please ensure you have a JDK that supports Java 24 preview features installed and configured before building or running this project.  
->  
-> If you want to run this on Java 21 or earlier, you will need to update the Maven configuration accordingly and remove the preview flags.
-
----
-
-
 ## 🏃‍♂️ Run the application
 Start all containers (Postgres, Liquibase, and the application) by running:
 
