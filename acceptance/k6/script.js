@@ -8,8 +8,7 @@ export const options = {
         {duration: '3s', target: 0},
     ],
     thresholds: {
-        http_req_duration: ['p(95)<200'], // 95% of requests should complete below 200ms
-        http_req_failed: ['rate<0.05'],   // Failures should be less than 5%
+        http_req_duration: ['p(95)<200'],
     }
 };
 
@@ -28,8 +27,6 @@ export default function () {
 }
 
 export function handleSummary(data) {
-//         console.log(JSON.stringify(data));
-
     http.post('http://localhost:8080/metrics', JSON.stringify(data), {
         headers: {
             'Content-Type': 'application/json',

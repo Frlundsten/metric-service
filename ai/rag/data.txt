@@ -1,0 +1,164 @@
+Understanding k6 Metrics for Performance Testing
+When running performance tests in k6, it's important to understand what the metrics mean. These metrics help assess the health, speed, and reliability of your system under load.
+
+Core HTTP Request Metrics
+Metric Name	                Type	Description
+http_req_blocked            Trend	Time a request was waiting before a TCP connection could be established. This includes waiting for a free connection slot (important under high load).
+http_req_connecting         Trend	Time spent setting up a TCP connection with the remote host.
+http_req_tls_handshaking	Trend	Time taken to complete a TLS handshake when using HTTPS.
+http_req_sending	        Trend	Time spent sending request data to the server.
+http_req_waiting	        Trend	Time from when the request was sent until the first byte of the response was received (also called TTFB – Time To First Byte).
+http_req_receiving	        Trend	Time taken to receive the entire response body from the server.
+http_req_duration	        Trend	Total time for the request — this is the sum of sending + waiting + receiving. It does not include blocked, connecting, or TLS handshaking.
+http_req_failed	            Rate	The ratio of failed HTTP requests based on your custom failure criteria (e.g. non-200 status codes).
+http_reqs	                Counter	Total number of HTTP requests made during the test run.
+
+Understanding Metric Types
+Type	Description
+Counter	A running total. For example, the number of HTTP requests made.
+Gauge	Records the latest value along with min/max. Useful for things like memory usage.
+Rate	Tracks the percentage of successful vs failed operations.
+Trend	Stores timing values and calculates avg, min, max, median, and percentiles. Useful for latency and duration measurements.
+
+Example Thresholds (Used in Test Assertions)
+Thresholds help define pass/fail conditions for your performance tests. They're applied to metrics — typically Trend metrics — and allow you to catch performance regressions.
+
+
+// Examples:
+'p(95) < 400'     // 95% of requests must finish in under 400ms
+'p(99) < 1000'    // 99% must be faster than 1 second
+'p(50) < 200'     // Median request should be below 200ms
+'max < 3000'      // No request should exceed 3 seconds
+Note: These values are in milliseconds.
+
+Practical Tips
+High values for http_req_blocked may mean your test is opening too many connections. Consider reusing connections or adjusting vus.
+
+A high http_req_failed rate indicates potential service issues. Look at error codes or logs.
+
+Use http_req_duration as a general performance indicator, but inspect its components (sending, waiting, receiving) to pinpoint bottlenecks.
+
+ FAQ-Style Additions (Optional)
+Q: What does p(95) mean in performance tests?
+A: It stands for the 95th percentile. It tells you that 95% of requests were faster than this value. It's a good way to understand the worst-case performance for most users. A low number means a faster request.
+
+Q: Why are there multiple timing metrics like waiting, sending, receiving?
+A: Breaking down request time helps isolate issues. For example, if waiting is slow but receiving is fast, your backend may be slow to respond.
+
+Q: What if http_req_duration is fast, but http_req_failed is high?
+A: It likely means you're getting fast error responses. Make sure you're checking response codes and not just timing.
+
+K6 Overview
+
+Purpose: k6 is a tool to test the reliability and performance of applications and infrastructure.
+
+Users: Engineering teams such as Developers, QA Engineers, SDETs, and SREs use k6 for various testing needs.
+
+Common Use Cases
+
+Load and Performance Testing:
+k6 is optimized for minimal resource use and is designed to run high-load tests such as spike, stress, or soak tests.
+
+Browser Performance Testing:
+The k6 browser API allows running browser-based performance tests and collecting browser metrics to identify issues. Browser tests can be combined with other performance tests for a complete performance overview.
+
+Performance and Synthetic Monitoring:
+Tests can be scheduled to run frequently with minimal load to continuously validate production environment performance and availability. Grafana Cloud Synthetic Monitoring supports running k6 scripts.
+
+Automation:
+k6 integrates with CI/CD and automation tools, enabling performance tests to be automated within development and release cycles.
+
+Chaos and Resilience Testing:
+k6 can simulate traffic for chaos experiments, trigger tests, or inject faults in Kubernetes using the xk6-disruptor extension.
+
+Infrastructure Testing:
+k6 extensions allow support for new protocols or direct testing of individual systems within infrastructure.
+
+Understanding P95 (95th Percentile) in Performance Testing
+
+What is P95?
+P95, or the 95th percentile, is a metric that shows the response time below which 95% of all requests are completed. In other words, only 5% of requests take longer than this time.
+
+Why is P95 Important?
+It provides insight into the experience of most users by highlighting the “worst-case” performance for nearly all requests, excluding the slowest 5%. This helps identify latency spikes and potential bottlenecks that average response times might miss.
+
+How is P95 Used?
+
+Performance tests use P95 to set thresholds or goals, for example:
+p(95) < 400 means 95% of requests should finish in under 400 milliseconds.
+
+Monitoring P95 helps catch issues that could affect user experience but may be hidden by average or median metrics.
+
+Key Benefits:
+
+Reflects realistic user experience by focusing on tail latency.
+
+Helps avoid performance regressions impacting a significant portion of users.
+
+Useful in service-level objectives (SLOs) and agreements (SLAs) for setting acceptable performance limits.
+
+What is a Metric in k6?
+
+A metric in k6 is a way to measure and track specific aspects of your performance test.
+
+Metrics collect data points during test execution, such as timings, counts, or success rates.
+
+There are different types of metrics in k6, each designed to capture a certain kind of information:
+
+Counter: Tracks a cumulative total, like the number of HTTP requests sent.
+
+Gauge: Records values that can go up or down, like memory usage or current connections.
+
+Rate: Measures the percentage of successful or failed events, such as error rates.
+
+Trend: Captures timing data and calculates statistics like average, min, max, median, and percentiles (e.g., P95).
+
+Metrics help you understand how your system performs under load, identify bottlenecks, and verify if it meets your performance goals.
+
+Why Metrics Matter:
+
+Metrics provide insight into performance health, reveal bottlenecks, and help you set thresholds to pass or fail tests. For example, using a Trend metric like http_req_duration with a threshold such as p(95) < 400 means 95% of requests should finish within 400 milliseconds, ensuring reliable performance.
+
+1. Comparing Numbers
+
+When comparing two numbers, we say:
+
+"Higher" means the first number is greater than the second.
+
+"Lower" means the first number is less than the second.
+
+Examples:
+
+10 is higher than 5.
+
+3 is lower than 7.
+
+2. Detecting Trends Over Time
+
+A trend shows whether a sequence of numbers is generally increasing, decreasing, or stable.
+
+Common terms:
+
+Increasing trend: numbers get larger over time (e.g., 5, 7, 10).
+
+Decreasing trend: numbers get smaller over time (e.g., 10, 8, 6).
+
+Stable: numbers stay about the same.
+
+Examples:
+
+If CPU usage is 40%, then 45%, then 50%, it’s an increasing trend.
+
+If sales dropped from 100 units, to 90 units, to 80 units, it’s a decreasing trend.
+
+3. Using Comparisons and Trends in Performance Tests
+
+You can use thresholds to compare metrics, for example:
+
+"p(95) < 400" means the 95th percentile should be lower than 400ms.
+
+Monitoring trends can help identify performance degradation or improvement:
+
+Increasing response times over several test runs indicate worsening performance.
+
+Decreasing error rates show improving reliability.

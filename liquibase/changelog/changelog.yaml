@@ -112,6 +112,10 @@ databaseChangeLog:
             file: db/metric_filled.csv
             tableName: metric
 
+  - changeSet:
+      id: 3
+      author: Fredrik L
+      changes:
         - sql:
             dbms: 'postgresql'
             endDelimiter: \nGO

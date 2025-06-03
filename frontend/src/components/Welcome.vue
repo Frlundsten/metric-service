@@ -19,16 +19,16 @@ function scrollToInfo() {
     <div ref="infoSection">
       <Info />
     </div>
-    <div class=" max-w-4xl">
-      <ul class="steps w-full steps-vertical">
+    <div class="max-w-4xl ">
+      <ul class="steps w-full steps-vertical pb-12">
         <li class="step step-primary">
           <span class="step-icon material-symbols-outlined">settings</span>
-          <HorizontalCard class="mx-auto w-4/5" img="requests.png" title="Test your server" description="Run your K6 script to simulate a surge of concurrent requests to test the performance of your server."
+          <HorizontalCard class="mx-auto w-4/5" img="requests.png" title="Run your test" description="Run your K6 script to simulate a surge of concurrent requests to test the performance of your server."
           />
         </li>
         <li class="step step-secondary">
           <span class="step-icon  material-symbols-outlined">database</span>
-          <HorizontalCard class="mx-auto w-4/5"  img="db.png" title="Persist the data" description="Store the results, summary, and output from the K6 test in a database or any storage solution of your choice."
+          <HorizontalCard class="mx-auto w-4/5"  img="db.png" title="Persist the data" description="Store the summary from the K6 test in a database or any storage solution of your choice."
           />
         </li>
         <li class="step step-success">

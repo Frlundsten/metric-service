@@ -1,7 +1,7 @@
 services:
 
   postgres:
-    image: postgres:latest
+    image: postgres:16-alpine
     container_name: postgres-container
     environment:
       POSTGRES_USER: user
@@ -27,23 +27,32 @@ services:
     depends_on:
       - postgres
 
-  metric-service:
-    build:
-      context: .
-    environment:
-      db.connection.url: jdbc:postgresql://postgres-container:5432/helidon
-      db.connection.username: user
-      db.connection.password: password
+  ai-runner:
+    provider:
+      type: model
+      options:
+        model : ai/deepseek-r1-distill-llama:8B-Q4_K_M
+
+#  metric-service:
+#    build:
+#      context: .
+#    environment:
+#      db.connection.url: jdbc:postgresql://postgres-container:5432/helidon
+#      db.connection.username: user
+#      db.connection.password: password
 #      mail.host:
 #      mail.port:
 #      mail.username:
 #      mail.password:
 #      mail.recipient:
-    ports:
-      - "8080:8080"
-    depends_on:
-      liquibase:
-        condition: service_completed_successfully
+#      AI_RUNNER_MODEL: ai/deepseek-r1-distill-llama:8B-Q4_K_M
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      liquibase:
+#        condition: service_completed_successfully
+#      ai-runner:
+#        condition: service_started
 
 volumes:
   postgres_data:

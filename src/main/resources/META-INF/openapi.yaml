@@ -9,6 +9,7 @@ servers:
 paths:
   /metrics:
     post:
+      summary: Save new metrics data
       description: Endpoint to save metrics data
       parameters:
         - $ref: '#/components/parameters/repository-id'
@@ -24,9 +25,12 @@ paths:
           description: Internal server error
 
     get:
-      description: Fetch metrics between two dates
+      summary: Retrieve metrics filtered by repository, date range, and optionally metric name
+      description: Retrieve metrics for a given repository within a specified date range.
+        Optionally, include a metric name as a query param to filter results to a specific metric.
       parameters:
         - $ref: '#/components/parameters/repository-id'
+        - $ref: '#/components/parameters/metric-name'
         - $ref: '#/components/parameters/date-from'
         - $ref: '#/components/parameters/date-to'
       responses:
@@ -46,7 +50,8 @@ paths:
 
   /metrics/recent:
     get:
-      description: Fetch metrics from a view of the past 30 days
+      summary: Retrieve recent metrics from the past 30 days
+      description: Returns a snapshot of repository metrics collected over the past 30 days, sourced from a materialized view for performance.
       parameters:
         - $ref: '#/components/parameters/repository-id'
       responses:
@@ -64,6 +69,29 @@ paths:
         404:
           description: Not found
 
+  /metrics/analyze:
+    post:
+      summary: Analyze metrics data using AI
+      description: | 
+       Submit metrics data to the AI service for analysis and insights generation.
+       Note: The results may not be reliable and should be interpreted with caution.
+
+      responses:
+        200:
+          description: All ok
+          content:
+            text/plain:
+              example: The increase in latency is worrying. It's crucial to investigate the cause of the increase to identify any potential issues or bottlenecks.
+
+        400:
+          description: Bad request
+        404:
+          description: Not found
+        500:
+          description: Internal server error
+
+
+
 components:
   parameters:
     repository-id:
@@ -73,6 +101,17 @@ components:
       required: true
       schema:
         type: string
+        example: repo-1
+    metric-name:
+      name: name
+      in: query
+      description: |
+        The query parameter containing the wanted metric over a timespan period.
+      required: false
+      schema:
+        type: string
+        description: The query parameter containing the wanted metric over a timespan period.
+        example: "http_req_duration"
     date-from:
       name: from
       in: query
@@ -95,7 +134,7 @@ components:
       schema:
         type: string
         description: The end date to look until (e.g., "2017-01-02T00:00:00Z").
-        example: "2017-01-02T00:00:00Z"
+        example: "2027-01-02T00:00:00Z"
         format: date-time
 
   requestBodies:
