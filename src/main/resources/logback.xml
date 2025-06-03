@@ -17,4 +17,8 @@
     <logger name="io.helidon.dbclient" level="TRACE"/>
     <logger name="javax.management.remote.rmi" level="WARN"/>
     <logger name="jdk.event.security" level="WARN"/>
+    <logger name="java.io.serialization" level="WARN"/>
+    <logger name="io.helidon.common" level="WARN"/>
+    <logger name="io.helidon.cors" level="WARN"/>
+    <logger name="org.simplejavamail.api.mailer.config" level="WARN"/>
 </configuration>
