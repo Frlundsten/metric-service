@@ -12,10 +12,12 @@ import com.fl.adapter.out.ai.AiContact;
 import com.fl.adapter.out.mail.MailSender;
 import com.fl.adapter.out.persistence.MetricJDBCRepository;
 import com.fl.application.domain.service.AlarmService;
+import com.fl.application.domain.service.AnalyzeService;
 import com.fl.application.domain.service.MetricService;
+import com.fl.application.port.in.analyze.ForAnalyzingData;
 import com.fl.application.port.in.create.ForCreateMetrics;
 import com.fl.application.port.in.manage.ForManagingMetrics;
-import com.fl.application.port.out.ai.ForContactingAI;
+import com.fl.application.port.out.analyze.ForDataAnalysis;
 import com.fl.application.port.out.create.ForPersistingMetrics;
 import com.fl.application.port.out.manage.ForManagingStoredMetrics;
 import com.fl.application.port.out.notification.ForAlertingUser;
@@ -63,14 +65,15 @@ public class HelidonWebserver {
         MetricJDBCRepository repository = new MetricJDBCRepository(client);
         ForPersistingMetrics persister = repository;
         ForManagingStoredMetrics manager = repository;
-        ForContactingAI aiContact = setupAiContact(config);
+        ForDataAnalysis aiContact = setupAiContact(config);
         ForAlertingUser alertUser = setupMailSender(config);
 
         /*
          * Domain services
          * Encapsulate core business logic and coordinate interactions between ports.
-         * May call outbound ports
+         * May call outbound ports.
          */
+        AnalyzeService analyzeService = new AnalyzeService(aiContact, manager);
         AlarmService alarmService = new AlarmService(alertUser);
         MetricService metricService = new MetricService(persister, manager, alarmService);
 
@@ -78,11 +81,14 @@ public class HelidonWebserver {
         ForCreateMetrics createMetrics = metricService;
         ForManagingMetrics manageMetrics = metricService;
 
+        // AnalyzeService uses outbound port
+        ForAnalyzingData analyzingData = analyzeService;
+
         /*
         Inbound adapters (application entry points / driving adapters)
         Responsible for handling incoming requests and delegating them to the appropriate use case (port).
          */
-        AiHandler aiHandler = new AiHandler(aiContact);
+        AiHandler aiHandler = new AiHandler(analyzingData);
         CreateMetricsHandler createMetricsHandler = new CreateMetricsHandler(createMetrics, mapper);
         ReportTimespanHandler reportTimespanHandler = new ReportTimespanHandler(manageMetrics);
         RecentReportsHandler recentReportshandler = new RecentReportsHandler(manageMetrics);
@@ -90,7 +96,7 @@ public class HelidonWebserver {
         return new DelegatingService(createMetricsHandler, reportTimespanHandler, recentReportshandler, aiHandler);
     }
 
-    private static ForContactingAI setupAiContact(Config config) {
+    private static ForDataAnalysis setupAiContact(Config config) {
         var aiUrl = config.get("AI_RUNNER_URL").asString().get();
         var aiModel = config.get("AI_RUNNER_MODEL").asString().get();
         return new AiContact(aiUrl, aiModel);
