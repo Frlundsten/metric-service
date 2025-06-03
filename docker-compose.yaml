@@ -31,28 +31,29 @@ services:
     provider:
       type: model
       options:
-        model : ai/deepseek-r1-distill-llama:8B-Q4_K_M
+        model : ai/llama3.2:1B-Q4_0
 
-#  metric-service:
-#    build:
-#      context: .
-#    environment:
-#      db.connection.url: jdbc:postgresql://postgres-container:5432/helidon
-#      db.connection.username: user
-#      db.connection.password: password
+  metric-service:
+    build:
+      context: .
+    environment:
+      db.connection.url: jdbc:postgresql://postgres-container:5432/helidon
+      db.connection.username: user
+      db.connection.password: password
 #      mail.host:
 #      mail.port:
 #      mail.username:
 #      mail.password:
 #      mail.recipient:
 #      AI_RUNNER_MODEL: ai/deepseek-r1-distill-llama:8B-Q4_K_M
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      liquibase:
-#        condition: service_completed_successfully
-#      ai-runner:
-#        condition: service_started
+#      AI_RUNNER_URL: http://model-runner.docker.internal/
+    ports:
+      - "8080:8080"
+    depends_on:
+      liquibase:
+        condition: service_completed_successfully
+      ai-runner:
+        condition: service_started
 
 volumes:
   postgres_data:
