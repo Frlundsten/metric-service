@@ -45,7 +45,6 @@ public interface ForManagingStoredMetrics {
   /**
    * Retrieves the data for a specific metric from the most recent test runs.
    * @param metric the metric to retrieve data for (e.g., "http_req_duration")
-   * @param count the number of most recent runs to include in the result
    */
-    List<MetricReport> getMetricFromRecentRuns(Metric metric, int count);
+    List<MetricReport> getMetricFromRecentRuns(Metric metric);
 }

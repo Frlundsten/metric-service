@@ -58,7 +58,8 @@ public class AlarmService {
      */
     protected void checkP95Trend(List<Double> p95List) {
         LOG.debug("Performing alarm check with {} p95 values", p95List.size());
-        if (p95List.size() <= 2) {
+        if (p95List.size() < REQ_DURATION_SPAN) {
+            LOG.debug("Wanted to perform a check on {} reports but could only find {}", REQ_DURATION_SPAN,p95List.size());
             return;
         }
 
@@ -67,9 +68,7 @@ public class AlarmService {
 
         var firstToLastCheck = last < first * FIRST_TO_LAST_THRESHOLD ? "✅" : "❌";
 
-        int maxComparisons = Math.min(p95List.size() - 1, REQ_DURATION_SPAN);
-
-        for (int i = 0; i < maxComparisons; i++) {
+        for (int i = 0; i < REQ_DURATION_SPAN - 1; i++) {
             if (p95List.get(i) * P95_THRESHOLD_ITERATION >= p95List.get(i + 1)) {
                 return;
             }

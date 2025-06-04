@@ -16,9 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -56,7 +59,7 @@ class AlarmServiceTest {
                                             K6Type.TREND,
                                             new TrendValues(44.00, 0.50, 1.37, 1.24, p95, 110.10)))));
         }
-
+        assertThat(reports).hasSize(RECENT_RUN_SPAN);
         assertThatNoException().isThrownBy(() -> alarmService.check(reports));
 
         verify(forAlertingUser, times(1))

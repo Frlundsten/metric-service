@@ -38,7 +38,7 @@ public class MetricService implements ForCreateMetrics, ForManagingMetrics {
       return;
     }
 
-    var recentReports = manageStoredMetrics.getMetricFromRecentRuns(reqDuration.get(), 5);
+    var recentReports = manageStoredMetrics.getMetricFromRecentRuns(reqDuration.get());
 
     alarmService.check(recentReports);
   }
