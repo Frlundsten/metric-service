@@ -8,6 +8,7 @@ import com.fl.adapter.common.Mapper;
 import com.fl.adapter.common.ObjectMapperFactory;
 import com.fl.application.domain.model.MetricReport;
 import com.fl.application.port.out.analyze.ForDataAnalysis;
+import com.fl.exception.AnalyzeAdapterException;
 import dev.langchain4j.data.document.DefaultDocument;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.Metadata;
@@ -77,10 +78,15 @@ public class AiContact implements ForDataAnalysis {
                 
                          Here are the reports (in JSON format):
                 """;
-        String answer = assistant.chat(prompt);
-        System.out.println(answer);
-
-        return answer;
+        try {
+            String answer = assistant.chat(prompt);
+            LOG.debug(answer);
+            return answer;
+        } catch (Exception e) {
+            LOG.error("Failed to get chat response", e);
+            throw new AnalyzeAdapterException(
+                    "Unable to reach the language model. Please check if it's running and ensure the environment variables are set correctly.");
+        }
     }
 
     private List<Document> getDocFromMetrics(List<AiMetricReportResource> reportResources) {

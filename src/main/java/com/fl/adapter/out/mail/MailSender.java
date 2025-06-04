@@ -2,6 +2,7 @@ package com.fl.adapter.out.mail;
 
 import com.fl.application.domain.model.MetricReport;
 import com.fl.application.port.out.notification.ForAlertingUser;
+import com.fl.exception.AlertUserAdapterException;
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
@@ -41,7 +42,8 @@ public class MailSender implements ForAlertingUser {
             mailer.sendMail(email);
             LOG.debug("Sending alert to user: {}", message);
         } catch (Exception e) {
-            LOG.error("Failed to send alert email", e);
+            LOG.error("Alert check failed and alert could not be sent. Possible misconfiguration.", e);
+            throw new AlertUserAdapterException("Failed to send alert: Please verify environment variables and configuration settings.");
         }
     }
 }

@@ -4,6 +4,7 @@ import com.fl.adapter.common.Mapper;
 import com.fl.adapter.common.RepositoryId;
 import com.fl.adapter.in.rest.dto.request.MetricReportRequestDTO;
 import com.fl.application.port.in.create.ForCreateMetrics;
+import com.fl.exception.AlertUserAdapterException;
 import io.helidon.http.HeaderNames;
 import io.helidon.http.media.jackson.JacksonRuntimeException;
 import io.helidon.webserver.http.Handler;
@@ -43,6 +44,8 @@ public class CreateMetricsHandler implements Handler {
     } catch (JacksonRuntimeException e) {
       LOG.error("Invalid request body", e);
       res.status(400).send("Invalid request body");
+    }catch (AlertUserAdapterException e){
+      res.status(201).send("Error during alerting user: " + e.getMessage());
     }
   }
 
