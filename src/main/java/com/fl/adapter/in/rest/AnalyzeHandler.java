@@ -3,6 +3,7 @@ package com.fl.adapter.in.rest;
 import com.fl.adapter.in.rest.dto.request.AiMetricReportRequest;
 import com.fl.application.domain.model.K6Type;
 import com.fl.application.port.in.analyze.ForAnalyzingData;
+import com.fl.exception.AnalyzeAdapterException;
 import io.helidon.common.GenericType;
 import io.helidon.webserver.http.Handler;
 import io.helidon.webserver.http.ServerRequest;
@@ -28,7 +29,6 @@ public class AnalyzeHandler implements Handler {
 
         reportDTOList = keepOnlyTrend(reportDTOList);
 
-
         if (reportDTOList.isEmpty()) {
             LOG.debug("Analyzing Recent runs");
             forAnalyzingData.analyzeRecentRuns();
@@ -38,9 +38,12 @@ public class AnalyzeHandler implements Handler {
         var domainList = reportDTOList.stream()
                 .map(AiMetricReportRequest::toDomain)
                 .toList();
-        var response = forAnalyzingData.analyzeData(domainList);
-
-        res.status(200).send(response);
+        try {
+            var response = forAnalyzingData.analyzeData(domainList);
+            res.status(200).send(response);
+        } catch (AnalyzeAdapterException e) {
+            res.status(503).send(e.getMessage());
+        }
     }
 
     private List<AiMetricReportRequest> keepOnlyTrend(List<AiMetricReportRequest> reportDTOList) {
